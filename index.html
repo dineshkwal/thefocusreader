@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheFocusReader — Focus Reading</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ═══════════════════════════════════════
+   THEME SYSTEM
+   ═══════════════════════════════════════ */
+:root {
+  --bg: #0f0f0f;
+  --bg-surface: #1a1a1a;
+  --bg-elevated: #252525;
+  --bg-glass: rgba(26, 26, 26, 0.85);
+  --text: #e0ddd5;
+  --text-muted: rgba(224, 221, 213, 0.5);
+  --text-faded: rgba(224, 221, 213, 0.35);
+  --accent: #d4a574;
+  --accent-glow: rgba(212, 165, 116, 0.15);
+  --accent-soft: rgba(212, 165, 116, 0.08);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-accent: rgba(212, 165, 116, 0.25);
+  --control-bg: rgba(255, 255, 255, 0.04);
+  --control-hover: rgba(255, 255, 255, 0.08);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-reading: 'Newsreader', 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+[data-theme="light"] {
+  --bg: #faf8f4;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f0ede6;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --text: #2c2a25;
+  --text-muted: rgba(44, 42, 37, 0.45);
+  --text-faded: rgba(44, 42, 37, 0.35);
+  --accent: #9c6b3a;
+  --accent-glow: rgba(156, 107, 58, 0.12);
+  --accent-soft: rgba(156, 107, 58, 0.06);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-accent: rgba(156, 107, 58, 0.3);
+  --control-bg: rgba(0, 0, 0, 0.03);
+  --control-hover: rgba(0, 0, 0, 0.06);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="sepia"] {
+  --bg: #f0e6d3;
+  --bg-surface: #e8dbc5;
+  --bg-elevated: #ddd0b8;
+  --bg-glass: rgba(232, 219, 197, 0.9);
+  --text: #4a3728;
+  --text-muted: rgba(74, 55, 40, 0.5);
+  --text-faded: rgba(74, 55, 40, 0.35);
+  --accent: #a0623a;
+  --accent-glow: rgba(160, 98, 58, 0.15);
+  --accent-soft: rgba(160, 98, 58, 0.08);
+  --border: rgba(74, 55, 40, 0.1);
+  --border-accent: rgba(160, 98, 58, 0.3);
+  --control-bg: rgba(74, 55, 40, 0.05);
+  --control-hover: rgba(74, 55, 40, 0.08);
+  --shadow: 0 8px 32px rgba(74, 55, 40, 0.12);
+  --shadow-sm: 0 2px 8px rgba(74, 55, 40, 0.08);
+}
+
+/* ═══════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════ */
+html { font-size: 19.4px; }
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--grain);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════
+   HEADER — Slim Bar + Expandable Tray
+   ═══════════════════════════════════════ */
+.header {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 20;
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  height: 44px;
+}
+
+.logo {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.logo-mark {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, var(--accent), rgba(212,165,116,0.4));
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #fff;
+  font-weight: 700;
+}
+.logo-text span { color: var(--accent); }
+
+/* Reading time in header */
+.reading-time-info {
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.reading-time-info .rt-accent { color: var(--accent); font-weight: 500; }
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Settings gear highlight when tray open */
+.settings-gear { position: relative; }
+.settings-gear.active { color: var(--accent) !important; }
+
+/* ── Expandable Settings Tray ── */
+.settings-tray {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 20px;
+  border-top: 1px solid transparent;
+}
+.settings-tray.open {
+  max-height: 56px;
+  padding: 8px 20px 10px;
+  border-top-color: var(--border);
+}
+
+.tray-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tray-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tray-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════
+   CONTROLS — Refined Pill Buttons
+   ═══════════════════════════════════════ */
+.btn {
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.btn:hover { background: var(--control-hover); border-color: var(--border-accent); }
+.btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+
+.btn-icon {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  min-height: 30px;
+}
+.btn-icon:hover { color: var(--text); background: var(--control-hover); }
+
+/* ── Mode Toggle ── */
+.mode-group {
+  display: flex;
+  background: var(--control-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.mode-group .btn {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--border);
+  font-size: 0.75rem;
+  padding: 5px 14px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.mode-group .btn:last-child { border-right: none; }
+
+/* ── Speed Control ── */
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  background: var(--control-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 4px;
+}
+.speed-stepper {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+  font-family: var(--font-ui);
+}
+.speed-stepper:hover { color: var(--text); background: var(--control-hover); }
+.speed-stepper:active { color: var(--accent); }
+
+.speed-control input[type="range"] {
+  width: 80px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 3px;
+}
+.speed-label {
+  min-width: 62px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Font select */
+#fontSelect {
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  font-size: 0.75rem;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+/* ═══════════════════════════════════════
+   WELCOME SCREEN
+   ═══════════════════════════════════════ */
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  gap: 28px;
+  animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.welcome-title {
+  font-family: var(--font-reading);
+  font-size: 2.2rem;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.welcome-title em {
+  color: var(--accent);
+  font-style: italic;
+}
+.welcome-sub {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: -16px;
+  font-weight: 400;
+}
+.welcome-features {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+.feature-dot {
+  width: 3px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.drop-zone {
+  width: 100%;
+  max-width: 480px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 44px 32px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: var(--accent-soft);
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: 0 0 40px var(--accent-glow);
+}
+.drop-zone h2 {
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.drop-zone p {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+}
+.drop-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+
+.divider-text {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 500;
+}
+
+.paste-area {
+  width: 100%;
+  max-width: 480px;
+}
+.paste-area textarea {
+  width: 100%;
+  min-height: 100px;
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: 0.88rem;
+  font-family: var(--font-ui);
+  resize: vertical;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+.paste-area textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.paste-area textarea::placeholder { color: var(--text-muted); }
+.paste-btn {
+  margin-top: 10px;
+  padding: 10px 32px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.paste-btn:hover { opacity: 0.85; box-shadow: 0 4px 16px var(--accent-glow); }
+
+/* ── Saved Sessions ── */
+.saved-sessions {
+  width: 100%;
+  max-width: 480px;
+}
+.saved-sessions h3 {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.session-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--control-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 6px;
+}
+.session-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.session-info { flex: 1; text-align: left; }
+.session-title {
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+.session-meta { font-size: 0.72rem; color: var(--text-muted); }
+.session-progress-bar {
+  width: 56px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.session-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.session-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.session-delete:hover { color: var(--accent); }
+
+.shortcuts-hint {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.8;
+  font-weight: 400;
+}
+.shortcuts-hint b { color: var(--text); font-weight: 500; }
+
+/* ═══════════════════════════════════════
+   APP BODY — Sidebar + Reader
+   ═══════════════════════════════════════ */
+.app-body {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.app-body.active { display: flex; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transform: translateX(-260px);
+  margin-left: -260px;
+  transition: transform var(--transition), margin-left var(--transition);
+  z-index: 5;
+  overflow: hidden;
+}
+.sidebar.open { transform: translateX(0); margin-left: 0; }
+
+.sidebar-header {
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-header h2 {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.sidebar-book-title {
+  font-family: var(--font-reading);
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-chapters {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.sidebar-chapters::-webkit-scrollbar { width: 3px; }
+.sidebar-chapters::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.chapter-item {
+  padding: 9px 16px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  border-left: 2px solid transparent;
+}
+.chapter-item:hover { color: var(--text); background: var(--control-hover); }
+.chapter-item.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+  font-weight: 500;
+}
+.chapter-item .ch-num {
+  font-size: 0.65rem;
+  font-weight: 600;
+  min-width: 16px;
+  opacity: 0.5;
+  font-family: var(--font-mono);
+}
+.chapter-item .ch-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chapter-item .ch-page {
+  font-size: 0.65rem;
+  opacity: 0.35;
+  font-family: var(--font-mono);
+}
+.no-chapters {
+  padding: 24px 16px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-progress-bar {
+  width: 100%;
+  height: 2px;
+  background: var(--control-bg);
+  border-radius: 1px;
+  margin-bottom: 6px;
+}
+.sidebar-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width var(--transition);
+}
+.sidebar-progress-text {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar-toggle {
+  background: var(--control-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  min-width: 28px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-toggle:hover { color: var(--text); background: var(--control-hover); }
+
+/* ═══════════════════════════════════════
+   READING AREA
+   ═══════════════════════════════════════ */
+.reader {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 56px 32px 80px;
+  scroll-behavior: smooth;
+}
+.reader::-webkit-scrollbar { width: 5px; }
+.reader::-webkit-scrollbar-track { background: transparent; }
+.reader::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.reader::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.reader-content {
+  max-width: var(--reading-width, 65ch);
+  margin: 0 auto;
+  font-family: var(--font-reading);
+  line-height: 2;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  cursor: default;
+  caret-color: transparent;
+}
+
+.reader-content .para {
+  margin-bottom: 1.5em;
+  transition: opacity 0.4s ease, transform 0.3s ease;
+}
+
+.reader-content .sentence { transition: opacity 0.35s ease; }
+.reader-content .line { display: block; transition: opacity 0.3s ease; }
+.reader-content .word { transition: opacity 0.2s ease; display: inline; }
+
+.reader-content .faded { opacity: 0.15; }
+.reader-content .focused { opacity: 1; }
+
+/* Focused paragraph — subtle warm glow */
+.reader-content .para.focused {
+  border-left: 2px solid var(--accent);
+  padding-left: 20px;
+  margin-left: -22px;
+  background: linear-gradient(90deg, var(--accent-soft), transparent 70%);
+  border-radius: 0 4px 4px 0;
+}
+
+/* Page markers */
+.page-marker {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--accent);
+  opacity: 0.4;
+  padding: 6px 0;
+  margin: 28px 0 16px;
+  border-top: 1px solid var(--border);
+  font-weight: 500;
+}
+
+/* Font families */
+.font-serif { --font-reading: 'Newsreader', 'Georgia', serif; }
+.font-sans { --font-reading: 'DM Sans', sans-serif; }
+.font-mono { --font-reading: 'JetBrains Mono', monospace; }
+
+/* ═══════════════════════════════════════
+   BOTTOM BAR — Floating Glass Controls
+   ═══════════════════════════════════════ */
+/* Slim persistent progress line at very bottom */
+.progress-slim {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--control-bg);
+  z-index: 19;
+  display: none;
+}
+.progress-slim.active { display: block; }
+.progress-slim-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 1px 1px 0;
+  transition: width 0.3s ease;
+}
+
+/* Bottom bar - auto-hide */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-top: 1px solid var(--border);
+  padding: 8px 20px;
+  display: none;
+  align-items: center;
+  gap: 14px;
+  z-index: 21;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+.bottom-bar.active { display: flex; }
+.bottom-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Hover zone at bottom to trigger controls */
+.bottom-hover-zone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  z-index: 20;
+  display: none;
+}
+.bottom-hover-zone.active { display: block; }
+
+.playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.play-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px var(--accent-glow);
+}
+.play-btn:hover { transform: scale(1.08); box-shadow: 0 4px 20px var(--accent-glow); }
+
+.progress-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.progress-bar-bg {
+  flex: 1;
+  height: 3px;
+  background: var(--control-bg);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: height 0.15s;
+}
+.progress-bar-bg:hover { height: 5px; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), rgba(212,165,116,0.6));
+  border-radius: 2px;
+  transition: width 0.2s;
+  position: relative;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.progress-bar-bg:hover .progress-fill::after { opacity: 1; }
+
+.progress-text {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 72px;
+  text-align: right;
+  font-weight: 400;
+}
+
+/* Page indicator */
+.page-indicator {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.page-indicator input {
+  width: 36px;
+  text-align: center;
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.page-indicator input:focus { outline: none; border-color: var(--accent); }
+
+/* ═══════════════════════════════════════
+   OVERLAYS — Glass Panels
+   ═══════════════════════════════════════ */
+.help-overlay, .bookmarks-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  animation: overlayIn 0.25s ease;
+}
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+.help-overlay.active, .bookmarks-overlay.active { display: flex; }
+
+.help-card, .bookmarks-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.help-card h3, .bookmarks-card h3 {
+  margin-bottom: 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.help-card table { width: 100%; font-size: 0.78rem; }
+.help-card td { padding: 5px 0; }
+.help-card td:first-child {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  padding-right: 20px;
+  white-space: nowrap;
+}
+.close-help {
+  margin-top: 18px;
+  padding: 7px 18px;
+  background: var(--control-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-family: var(--font-ui);
+  transition: all 0.2s;
+}
+.close-help:hover { background: var(--control-hover); }
+
+/* ── Bookmarks ── */
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 2px;
+}
+.bookmark-item:hover { background: var(--control-hover); }
+.bookmark-icon { font-size: 0.9rem; }
+.bookmark-details { flex: 1; }
+.bookmark-name { font-size: 0.85rem; font-weight: 500; }
+.bookmark-pos { font-size: 0.7rem; color: var(--text-muted); }
+.bookmark-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.bookmark-delete:hover { color: var(--accent); }
+.no-bookmarks {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 20px;
+}
+
+/* ── Toast ── */
+.bookmark-toast {
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--bg-elevated);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-accent);
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 50;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+}
+.bookmark-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════════
+   LOADING
+   ═══════════════════════════════════════ */
+.loading-spinner {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px;
+}
+.loading-spinner.active { display: flex; }
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-spinner span { color: var(--text-muted); font-size: 0.82rem; }
+
+/* ═══════════════════════════════════════
+   FULLSCREEN — Hide header, show on hover
+   ═══════════════════════════════════════ */
+:fullscreen .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  z-index: 30;
+}
+:fullscreen .header:hover,
+:fullscreen .header.peek {
+  transform: translateY(0);
+  opacity: 1;
+}
+:fullscreen .header-hover-zone {
+  display: block;
+}
+
+/* Top hover zone to trigger header in fullscreen */
+.header-hover-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  z-index: 25;
+  display: none;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .header { padding: 8px 14px; flex-wrap: wrap; gap: 8px; }
+  .reader { padding: 32px 18px 64px; }
+  .reader-content { font-size: 1.05rem; }
+  .speed-control input[type="range"] { width: 60px; }
+  .sidebar { width: 220px; transform: translateX(-220px); margin-left: -220px; }
+  .welcome-title { font-size: 1.6rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top hover zone for fullscreen -->
+<div class="header-hover-zone" id="headerHoverZone"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-main">
+    <div class="logo">
+      <div class="logo-mark">F</div>
+      <div class="logo-text">Focus<span>Reader</span></div>
+    </div>
+    <div class="reading-time-info" id="readingTimeInfo" style="display:none;" title="Reading time estimate">
+      <span id="rtLine1"></span>
+    </div>
+    <div class="header-icons">
+      <button class="sidebar-toggle" id="sidebarToggle" title="Chapters (C)">&#9776;</button>
+      <button class="btn-icon" id="bookmarkBtn" title="Bookmarks (B)">&#128278;</button>
+      <button class="btn-icon" id="themeToggle" title="Theme (D)">&#9789;</button>
+      <button class="btn-icon" id="fullscreenBtn" title="Fullscreen (F)">&#x26F6;</button>
+      <button class="btn-icon settings-gear" id="settingsGear" title="Settings">&#9881;</button>
+      <button class="btn-icon" id="helpBtn" title="Shortcuts (?)">?</button>
+      <button class="btn" id="newTextBtn" style="display:none;" title="Load new text">New</button>
+    </div>
+  </div>
+  <!-- Expandable Settings Tray -->
+  <div class="settings-tray" id="settingsTray">
+    <div class="tray-group">
+      <span class="tray-label">Mode</span>
+      <div class="mode-group" id="modeGroup">
+        <button class="btn" data-mode="line" title="Line mode (1)">Line</button>
+        <button class="btn active" data-mode="sentence" title="Sentence mode (2)">Sentence</button>
+        <button class="btn" data-mode="paragraph" title="Paragraph mode (3)">Paragraph</button>
+      </div>
+    </div>
+    <div class="tray-divider"></div>
+    <div class="tray-group">
+      <span class="tray-label">Speed</span>
+      <div class="speed-control">
+        <button class="speed-stepper" id="speedDown" title="Slower">&#8722;</button>
+        <input type="range" id="speedSlider" min="1" max="100" value="50" title="Adjust speed">
+        <button class="speed-stepper" id="speedUp" title="Faster">&#43;</button>
+        <span class="speed-label" id="speedLabel"></span>
+      </div>
+    </div>
+    <div class="tray-divider"></div>
+    <div class="tray-group">
+      <span class="tray-label">Font</span>
+      <button class="speed-stepper" id="fontDown" title="Smaller">A&#8315;</button>
+      <span style="font-size:0.72rem;color:var(--text-muted);min-width:24px;text-align:center;font-variant-numeric:tabular-nums;" id="fontSizeDisplay">1.2</span>
+      <button class="speed-stepper" id="fontUp" title="Larger">A&#8314;</button>
+      <select id="fontSelect" title="Font family">
+        <option value="serif">Serif</option>
+        <option value="sans">Sans</option>
+        <option value="mono">Mono</option>
+      </select>
+    </div>
+    <div class="tray-divider"></div>
+    <div class="tray-group">
+      <span class="tray-label">Width</span>
+      <div class="mode-group" id="widthGroup">
+        <button class="btn" data-width="narrow" title="Narrow (50ch)">S</button>
+        <button class="btn active" data-width="medium" title="Medium (65ch)">M</button>
+        <button class="btn" data-width="wide" title="Wide (85ch)">L</button>
+        <button class="btn" data-width="full" title="Full width">XL</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Welcome Screen -->
+<div class="welcome" id="welcomeScreen">
+  <div class="welcome-title">Read with <em>focus</em></div>
+  <div class="welcome-sub">Drop a PDF or paste text to begin your focused reading session</div>
+  <div class="drop-zone" id="dropZone">
+    <h2>Drop a PDF here</h2>
+    <p>or click to browse your files</p>
+    <input type="file" id="fileInput" accept=".pdf,.txt">
+  </div>
+  <div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+    <span>Extracting text...</span>
+  </div>
+  <div class="divider-text">or paste text</div>
+  <div class="paste-area">
+    <textarea id="pasteText" placeholder="Paste your text here..."></textarea>
+    <button class="paste-btn" id="pasteBtn">Start Reading</button>
+  </div>
+  <div class="saved-sessions" id="savedSessions" style="display:none;">
+    <h3>Continue Reading</h3>
+    <div id="sessionList"></div>
+  </div>
+  <div class="shortcuts-hint">
+    <b>Space</b> play/pause &middot; <b>Arrow keys</b> navigate &middot; <b>B</b> bookmark &middot; <b>?</b> all shortcuts
+  </div>
+</div>
+
+<!-- App Body -->
+<div class="app-body">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Contents</h2>
+      <div class="sidebar-book-title" id="sidebarTitle"></div>
+    </div>
+    <div class="sidebar-chapters" id="sidebarChapters">
+      <div class="no-chapters">Load a document to see chapters</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-progress-bar"><div class="sidebar-progress-fill" id="sidebarProgressFill" style="width:0%"></div></div>
+      <div class="sidebar-progress-text">
+        <span id="sidebarPct">0%</span>
+        <span id="sidebarPageInfo"></span>
+      </div>
+    </div>
+  </div>
+  <div class="reader" id="reader">
+    <div class="reader-content" id="readerContent"></div>
+  </div>
+</div>
+
+<!-- Slim Progress Line (always visible) -->
+<div class="progress-slim" id="progressSlim">
+  <div class="progress-slim-fill" id="progressSlimFill" style="width:0%"></div>
+</div>
+
+<!-- Hover zone to trigger bottom bar -->
+<div class="bottom-hover-zone" id="bottomHoverZone"></div>
+
+<!-- Bottom Bar (auto-hides) -->
+<div class="bottom-bar" id="bottomBar">
+  <div class="playback-controls">
+    <button class="btn-icon" id="prevBtn" title="Previous">&#9664;</button>
+    <button class="play-btn" id="playPauseBtn" title="Play/Pause">&#9654;</button>
+    <button class="btn-icon" id="nextBtn" title="Next">&#9654;</button>
+  </div>
+  <div class="progress-wrapper">
+    <div class="progress-bar-bg" id="progressBar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <span class="progress-text" id="progressText">0 / 0</span>
+  </div>
+  <div class="page-indicator" id="pageIndicator" style="display:none;">
+    <span>Pg</span>
+    <input type="number" id="pageInput" min="1" value="1" title="Jump to page">
+    <span id="pageTotalLabel">/ 0</span>
+  </div>
+</div>
+
+<!-- Help Overlay -->
+<div class="help-overlay" id="helpOverlay">
+  <div class="help-card">
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td>Space</td><td>Play / Pause</td></tr>
+      <tr><td>&larr; &rarr;</td><td>Previous / Next unit</td></tr>
+      <tr><td>&uarr; &darr;</td><td>Increase / Decrease speed</td></tr>
+      <tr><td>1 / 2 / 3</td><td>Line / Sentence / Paragraph mode</td></tr>
+      <tr><td>D</td><td>Cycle theme (Dark / Light / Sepia)</td></tr>
+      <tr><td>C</td><td>Toggle chapter sidebar</td></tr>
+      <tr><td>F</td><td>Toggle fullscreen</td></tr>
+      <tr><td>+ / -</td><td>Font size up / down</td></tr>
+      <tr><td>B</td><td>Add bookmark at current position</td></tr>
+      <tr><td>?</td><td>Show / hide this help</td></tr>
+      <tr><td>Esc</td><td>Close overlay / Go back</td></tr>
+    </table>
+    <button class="close-help" onclick="toggleHelp()">Close</button>
+  </div>
+</div>
+
+<!-- Bookmark Toast -->
+<div class="bookmark-toast" id="bookmarkToast"></div>
+
+<!-- Bookmarks Overlay -->
+<div class="bookmarks-overlay" id="bookmarksOverlay">
+  <div class="bookmarks-card">
+    <h3>Bookmarks</h3>
+    <div id="bookmarksList"></div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn" id="addBookmarkBtn" style="flex:1;">+ Add Bookmark Here</button>
+      <button class="close-help" onclick="toggleBookmarks()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const state = {
+  mode: 'sentence',
+  playing: false,
+  currentIndex: 0,
+  units: [],
+  paragraphs: [],
+  fontSize: 1.15,
+  speed: 50,
+  timer: null,
+  documentId: null,
+  documentTitle: '',
+  rawText: '',
+  totalPages: 0,
+  chapters: [],
+};
+
+// ── DOM refs ──
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+const welcomeScreen = $('#welcomeScreen');
+const reader = $('#reader');
+const readerContent = $('#readerContent');
+const bottomBar = $('#bottomBar');
+const progressFill = $('#progressFill');
+const progressText = $('#progressText');
+const speedSlider = $('#speedSlider');
+const speedLabel = $('#speedLabel');
+const playPauseBtn = $('#playPauseBtn');
+const dropZone = $('#dropZone');
+const fileInput = $('#fileInput');
+const pasteText = $('#pasteText');
+const loadingSpinner = $('#loadingSpinner');
+const helpOverlay = $('#helpOverlay');
+
+// ── PDF.js setup ──
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// ── Load settings from localStorage ──
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('thefocusreader_settings') || '{}');
+    if (s.theme) document.documentElement.dataset.theme = s.theme;
+    if (s.mode) state.mode = s.mode;
+    if (s.fontSize) state.fontSize = s.fontSize;
+    if (s.speed) { state.speed = s.speed; speedSlider.value = s.speed; }
+    if (s.font) { $('#fontSelect').value = s.font; setFont(s.font); }
+    if (s.readingWidth) {
+      $$('#widthGroup .btn').forEach(b => b.classList.toggle('active', b.dataset.width === s.readingWidth));
+      readerContent.style.maxWidth = widthMap[s.readingWidth] || '65ch';
+    }
+    updateModeButtons();
+    updateSpeedLabel();
+    applyFontSize();
+  } catch(e) {}
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem('thefocusreader_settings', JSON.stringify({
+      theme: document.documentElement.dataset.theme,
+      mode: state.mode,
+      fontSize: state.fontSize,
+      speed: state.speed,
+      font: $('#fontSelect').value,
+    }));
+  } catch(e) {}
+}
+
+// ── Speed calculation ──
+function getInterval() {
+  const v = parseInt(speedSlider.value);
+  if (state.mode === 'line') {
+    return 5000 - (v / 100) * 4700;
+  } else if (state.mode === 'sentence') {
+    return 8000 - (v / 100) * 7200;
+  } else {
+    return 15000 - (v / 100) * 13500;
+  }
+}
+
+// Adjust interval based on word count of current unit
+// Scale interval by character count (excluding spaces) — most accurate proxy for reading time
+function getAdjustedInterval() {
+  const base = getInterval();
+  const current = state.units[state.currentIndex];
+  if (!current) return base;
+  const text = current.textContent || '';
+  const charCount = text.replace(/\s/g, '').length;
+  // Baselines in characters (no spaces): sentence ~50, line ~40, paragraph ~200
+  const baseline = state.mode === 'paragraph' ? 200 : state.mode === 'sentence' ? 50 : 40;
+  const scale = Math.max(0.35, charCount / baseline);
+  return base * scale;
+}
+
+function updateSpeedLabel() {
+  const v = parseInt(speedSlider.value);
+  if (state.mode === 'line') {
+    const spl = (5 - (v / 100) * 4.7).toFixed(1);
+    speedLabel.textContent = spl + ' s/line';
+  } else if (state.mode === 'sentence') {
+    const sps = (8 - (v / 100) * 7.2).toFixed(1);
+    speedLabel.textContent = sps + ' s/sent';
+  } else {
+    const spp = (15 - (v / 100) * 13.5).toFixed(1);
+    speedLabel.textContent = spp + ' s/para';
+  }
+}
+
+// ── PDF Parsing (Enhanced) ──
+const PAGE_BREAK = '\n\n<!--PAGEBREAK-->\n\n';
+
+async function parsePDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  state.totalPages = pdf.numPages;
+  let fullText = '';
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = extractPageText(content, page);
+    fullText += pageText;
+    if (i < pdf.numPages) fullText += PAGE_BREAK;
+  }
+  return fullText;
+}
+
+function extractPageText(content, page) {
+  const items = content.items.filter(item => item.str.trim().length > 0);
+  if (items.length === 0) return '';
+
+  // ── Step 1: Enrich items with position and font info ──
+  const enriched = items.map(item => {
+    const tx = item.transform;
+    return {
+      str: item.str,
+      x: tx[4],                           // horizontal position
+      y: tx[5],                           // vertical position (PDF y = bottom-up)
+      fontSize: Math.abs(tx[0]) || Math.abs(tx[3]) || 12, // font size from transform matrix
+      fontName: item.fontName || '',
+      width: item.width || 0,
+      height: item.height || 0,
+    };
+  });
+
+  // ── Step 2: Detect dominant (body) font size ──
+  const fontSizeCounts = {};
+  enriched.forEach(item => {
+    const fs = Math.round(item.fontSize * 10) / 10; // round to 1 decimal
+    const charLen = item.str.replace(/\s/g, '').length;
+    fontSizeCounts[fs] = (fontSizeCounts[fs] || 0) + charLen;
+  });
+  const bodyFontSize = parseFloat(
+    Object.entries(fontSizeCounts).sort((a, b) => b[1] - a[1])[0][0]
+  );
+
+  // ── Step 3: Detect dominant left margin (x position) for body text ──
+  const xPositions = {};
+  enriched.forEach(item => {
+    if (Math.abs(item.fontSize - bodyFontSize) < 1) {
+      const xRound = Math.round(item.x);
+      xPositions[xRound] = (xPositions[xRound] || 0) + 1;
+    }
+  });
+  const bodyLeftX = parseFloat(
+    Object.entries(xPositions).sort((a, b) => b[1] - a[1])[0]?.[0] || 0
+  );
+
+  // ── Step 4: Detect if page has multiple columns ──
+  const xValues = enriched
+    .filter(item => Math.abs(item.fontSize - bodyFontSize) < 1)
+    .map(item => item.x);
+  const pageWidth = page.view ? (page.view[2] - page.view[0]) : 612;
+  const midX = pageWidth / 2;
+  const leftCol = xValues.filter(x => x < midX - 50);
+  const rightCol = xValues.filter(x => x > midX + 50);
+  const isMultiColumn = leftCol.length > 10 && rightCol.length > 10;
+
+  // ── Step 5: Sort items into reading order ──
+  let sorted;
+  if (isMultiColumn) {
+    // Split into columns, process left first then right
+    const leftItems = enriched.filter(item => item.x < midX);
+    const rightItems = enriched.filter(item => item.x >= midX);
+    // Sort each column top-to-bottom, then left-to-right within lines
+    const sortCol = (items) => items.sort((a, b) => {
+      const yDiff = b.y - a.y; // PDF y is bottom-up, so higher y = earlier
+      if (Math.abs(yDiff) > 2) return yDiff > 0 ? -1 : 1;
+      return a.x - b.x;
+    });
+    sorted = [...sortCol(leftItems), ...sortCol(rightItems)];
+  } else {
+    sorted = enriched.sort((a, b) => {
+      const yDiff = b.y - a.y;
+      if (Math.abs(yDiff) > 2) return yDiff > 0 ? -1 : 1;
+      return a.x - b.x;
+    });
+  }
+
+  // ── Step 6: Group into lines and paragraphs ──
+  const lines = [];
+  let currentLine = { items: [sorted[0]], y: sorted[0].y };
+
+  for (let i = 1; i < sorted.length; i++) {
+    const item = sorted[i];
+    const yDiff = Math.abs(item.y - currentLine.y);
+
+    if (yDiff < 3) {
+      // Same line — append
+      currentLine.items.push(item);
+    } else {
+      // New line
+      lines.push(currentLine);
+      currentLine = { items: [item], y: item.y };
+    }
+  }
+  lines.push(currentLine);
+
+  // ── Step 7: Build text with smart paragraph detection ──
+  const result = [];
+  let prevLine = null;
+  let prevLineY = null;
+  const lineHeights = [];
+
+  // Calculate typical line height
+  for (let i = 1; i < lines.length; i++) {
+    const gap = Math.abs(lines[i - 1].y - lines[i].y);
+    if (gap > 0 && gap < 50) lineHeights.push(gap);
+  }
+  lineHeights.sort((a, b) => a - b);
+  const typicalLineHeight = lineHeights.length > 0
+    ? lineHeights[Math.floor(lineHeights.length / 2)]
+    : 14;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineText = line.items.map(item => item.str).join(' ').replace(/\s+/g, ' ').trim();
+    if (!lineText) continue;
+
+    const lineFontSize = line.items[0].fontSize;
+    const lineX = line.items[0].x;
+    const isHeading = lineFontSize > bodyFontSize * 1.15;
+    const isBold = line.items[0].fontName.toLowerCase().includes('bold');
+    const isIndented = lineX > bodyLeftX + 10;
+
+    // Determine if this is a new paragraph
+    let newParagraph = false;
+    if (prevLineY !== null) {
+      const gap = Math.abs(prevLineY - line.y);
+      // New paragraph if: gap > 1.5x typical line height, or heading, or significant indent change
+      if (gap > typicalLineHeight * 1.5) newParagraph = true;
+      if (isHeading) newParagraph = true;
+    } else {
+      newParagraph = true;
+    }
+
+    if (newParagraph && result.length > 0) {
+      result.push('\n\n');
+    } else if (result.length > 0) {
+      // Same paragraph, add space (joining wrapped lines)
+      const lastChar = result[result.length - 1].slice(-1);
+      // If previous line ended with a hyphen, join without space (hyphenation)
+      if (lastChar === '-') {
+        result[result.length - 1] = result[result.length - 1].slice(0, -1);
+      } else {
+        result.push(' ');
+      }
+    }
+
+    result.push(lineText);
+    prevLineY = line.y;
+    prevLine = line;
+  }
+
+  return result.join('');
+}
+
+// ── Text Processing ──
+function processText(rawText) {
+  state.rawText = rawText;
+  if (!state.documentId) {
+    state.documentId = hashText(rawText);
+  }
+  if (!state.documentTitle) {
+    state.documentTitle = rawText.substring(0, 60).replace(/\s+/g, ' ').trim() + '...';
+  }
+
+  const pages = rawText.split(PAGE_BREAK);
+  if (pages.length > 1) {
+    state.totalPages = pages.length;
+  } else if (!state.totalPages) {
+    state.totalPages = 0;
+  }
+
+  state.paragraphs = [];
+  pages.forEach((pageText, pageIdx) => {
+    const rawParas = pageText.split(/\n\s*\n/).map(p => p.replace(/\s+/g, ' ').trim()).filter(p => p.length > 0);
+    rawParas.forEach(p => {
+      const sentences = p.match(/[^.!?]*[.!?]+[\s]?|[^.!?]+$/g) || [p];
+      state.paragraphs.push({
+        text: p,
+        sentences: sentences.map(s => s.trim()).filter(s => s.length > 0),
+        page: pageIdx + 1,
+      });
+    });
+  });
+
+  renderText();
+}
+
+// ── Rendering ──
+function renderText() {
+  readerContent.innerHTML = '';
+  let lastPage = 0;
+
+  state.paragraphs.forEach((para, pi) => {
+    if (para.page && para.page !== lastPage) {
+      const marker = document.createElement('div');
+      marker.className = 'page-marker';
+      marker.dataset.page = para.page;
+      marker.id = 'page-' + para.page;
+      marker.textContent = 'Page ' + para.page;
+      readerContent.appendChild(marker);
+      lastPage = para.page;
+    }
+
+    const paraEl = document.createElement('div');
+    paraEl.className = 'para';
+    paraEl.dataset.paraIndex = pi;
+    paraEl.dataset.page = para.page || 1;
+
+    para.sentences.forEach((sent, si) => {
+      const sentEl = document.createElement('span');
+      sentEl.className = 'sentence';
+      sentEl.dataset.paraIndex = pi;
+      sentEl.dataset.sentIndex = si;
+      sentEl.dataset.page = para.page || 1;
+
+      const words = sent.split(/(\s+)/);
+      words.forEach(w => {
+        if (w.trim().length === 0) {
+          sentEl.appendChild(document.createTextNode(w));
+        } else {
+          const wordEl = document.createElement('span');
+          wordEl.className = 'word';
+          wordEl.dataset.paraIndex = pi;
+          wordEl.dataset.sentIndex = si;
+          wordEl.dataset.page = para.page || 1;
+          wordEl.textContent = w;
+          sentEl.appendChild(wordEl);
+        }
+      });
+
+      paraEl.appendChild(sentEl);
+      if (si < para.sentences.length - 1) {
+        paraEl.appendChild(document.createTextNode(' '));
+      }
+    });
+
+    readerContent.appendChild(paraEl);
+  });
+
+  collectUnits();
+  showReader();
+  updatePageIndicator();
+  if (state.mode === 'line') {
+    generateLines();
+    collectUnits();
+  }
+}
+
+function collectUnits() {
+  if (state.mode === 'line') {
+    state.units = Array.from(readerContent.querySelectorAll('.line'));
+  } else if (state.mode === 'sentence') {
+    state.units = Array.from(readerContent.querySelectorAll('.sentence'));
+  } else {
+    state.units = Array.from(readerContent.querySelectorAll('.para'));
+  }
+  state.currentIndex = 0;
+  updateFocus();
+  updateProgress();
+}
+
+// ── Line Generation ──
+function generateLines() {
+  const paras = readerContent.querySelectorAll('.para');
+  paras.forEach(paraEl => {
+    const pi = paraEl.dataset.paraIndex;
+    const page = paraEl.dataset.page;
+    const text = paraEl.textContent;
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+
+    const style = getComputedStyle(readerContent);
+    const font = style.fontFamily;
+    const fontSize = style.fontSize;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = fontSize + ' ' + font;
+    const maxWidth = paraEl.clientWidth;
+
+    const lines = [];
+    let currentLine = '';
+    words.forEach(word => {
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      const width = ctx.measureText(testLine).width;
+      if (width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+
+    paraEl.innerHTML = '';
+    lines.forEach(lineText => {
+      const lineEl = document.createElement('span');
+      lineEl.className = 'line';
+      lineEl.dataset.paraIndex = pi;
+      lineEl.dataset.page = page;
+      lineEl.textContent = lineText;
+      paraEl.appendChild(lineEl);
+    });
+  });
+}
+
+// ── Focus Management ──
+function updateFocus() {
+  const allParas = readerContent.querySelectorAll('.para');
+  const allSents = readerContent.querySelectorAll('.sentence');
+  const allLines = readerContent.querySelectorAll('.line');
+
+  allParas.forEach(el => { el.classList.remove('focused', 'faded'); });
+  allSents.forEach(el => { el.classList.remove('focused', 'faded'); });
+  allLines.forEach(el => { el.classList.remove('focused', 'faded'); });
+
+  if (state.units.length === 0) return;
+  const current = state.units[state.currentIndex];
+  if (!current) return;
+
+  if (state.mode === 'paragraph') {
+    allParas.forEach(el => el.classList.add('faded'));
+    current.classList.remove('faded');
+    current.classList.add('focused');
+  } else if (state.mode === 'sentence') {
+    allSents.forEach(el => el.classList.add('faded'));
+    current.classList.remove('faded');
+    current.classList.add('focused');
+  } else if (state.mode === 'line') {
+    allLines.forEach(el => el.classList.add('faded'));
+    current.classList.remove('faded');
+    current.classList.add('focused');
+  }
+
+  scrollToUnit(current);
+}
+
+function scrollToUnit(el) {
+  const container = reader;
+  const rect = el.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const centerY = containerRect.top + containerRect.height / 2;
+  const elCenterY = rect.top + rect.height / 2;
+  const diff = elCenterY - centerY;
+  if (Math.abs(diff) > containerRect.height * 0.3) {
+    container.scrollBy({ top: diff, behavior: 'smooth' });
+  }
+}
+
+// ── Playback ──
+function play() {
+  if (state.units.length === 0) return;
+  state.playing = true;
+  playPauseBtn.innerHTML = '&#9646;&#9646;';
+  advance();
+  // Auto-hide bottom bar after delay
+  if (typeof bottomBarTimer !== 'undefined') {
+    clearTimeout(bottomBarTimer);
+    bottomBarTimer = setTimeout(() => { bottomBar.classList.remove('visible'); }, 2500);
+  }
+}
+
+function pause() {
+  state.playing = false;
+  clearTimeout(state.timer);
+  state.timer = null;
+  playPauseBtn.innerHTML = '&#9654;';
+  saveSession();
+  // Always show bar when paused
+  bottomBar.classList.add('visible');
+  if (typeof bottomBarTimer !== 'undefined') clearTimeout(bottomBarTimer);
+}
+
+function togglePlay() {
+  if (state.playing) pause(); else play();
+}
+
+function advance() {
+  if (!state.playing) return;
+  const interval = getAdjustedInterval();
+  state.timer = setTimeout(() => {
+    if (state.currentIndex < state.units.length - 1) {
+      state.currentIndex++;
+      updateFocus();
+      updateProgress();
+      advance();
+    } else {
+      pause();
+    }
+  }, interval);
+}
+
+function goNext() {
+  if (state.currentIndex < state.units.length - 1) {
+    state.currentIndex++;
+    updateFocus();
+    updateProgress();
+    if (state.playing) { clearTimeout(state.timer); advance(); }
+  }
+}
+
+function goPrev() {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    updateFocus();
+    updateProgress();
+    if (state.playing) { clearTimeout(state.timer); advance(); }
+  }
+}
+
+function jumpTo(index) {
+  state.currentIndex = Math.max(0, Math.min(index, state.units.length - 1));
+  updateFocus();
+  updateProgress();
+  if (state.playing) { clearTimeout(state.timer); advance(); }
+}
+
+// ── Progress ──
+function updateProgress() {
+  if (state.units.length === 0) return;
+  const pct = ((state.currentIndex + 1) / state.units.length) * 100;
+  progressFill.style.width = pct + '%';
+  progressText.textContent = (state.currentIndex + 1) + ' / ' + state.units.length;
+  // Update slim progress line
+  const slimFill = $('#progressSlimFill');
+  if (slimFill) slimFill.style.width = pct + '%';
+  updatePageIndicator();
+  updateActiveChapter();
+  updateReadingTime();
+}
+
+// ── Page Indicator ──
+function updatePageIndicator() {
+  const indicator = $('#pageIndicator');
+  if (state.totalPages <= 0) { indicator.style.display = 'none'; return; }
+  indicator.style.display = '';
+  $('#pageTotalLabel').textContent = '/ ' + state.totalPages;
+  const current = state.units[state.currentIndex];
+  if (current) { $('#pageInput').value = parseInt(current.dataset.page || '1'); }
+}
+
+function jumpToPage(pageNum) {
+  pageNum = Math.max(1, Math.min(pageNum, state.totalPages));
+  for (let i = 0; i < state.units.length; i++) {
+    if (parseInt(state.units[i].dataset.page || '1') >= pageNum) { jumpTo(i); return; }
+  }
+}
+
+// ── UI State ──
+function showReader() {
+  welcomeScreen.style.display = 'none';
+  $('.app-body').classList.add('active');
+  bottomBar.classList.add('active');
+  $('#progressSlim').classList.add('active');
+  $('#bottomHoverZone').classList.add('active');
+  $('#newTextBtn').style.display = '';
+  $('#sidebarTitle').textContent = state.documentTitle;
+  detectChapters();
+  showBottomBar(); // show initially
+}
+
+function showWelcome() {
+  saveSession();
+  pause();
+  $('.app-body').classList.remove('active');
+  bottomBar.classList.remove('active', 'visible');
+  $('#progressSlim').classList.remove('active');
+  $('#bottomHoverZone').classList.remove('active');
+  $('#readingTimeInfo').style.display = 'none';
+  welcomeScreen.style.display = '';
+  readerContent.innerHTML = '';
+  state.units = [];
+  state.paragraphs = [];
+  state.chapters = [];
+  state.currentIndex = 0;
+  state.documentId = null;
+  state.documentTitle = '';
+  state.rawText = '';
+  state.totalPages = 0;
+  $('#newTextBtn').style.display = 'none';
+  pasteText.value = '';
+  renderSavedSessions();
+}
+
+// ── Chapter Detection ──
+function detectChapters() {
+  state.chapters = [];
+  const chapterPatterns = [
+    /^chapter\s+\d+/i, /^part\s+\d+/i, /^ch\s*\.\s*\d+/i,
+    /^chapter\s+\d+\s*[|:.\-]/i, /^section\s+\d+/i,
+    /^DEDICATION$/i, /^CONTENTS$/i, /^INTRODUCTION$/i, /^PREFACE$/i,
+    /^FOREWORD$/i, /^EPILOGUE$/i, /^APPENDIX/i, /^ACKNOWLEDGMENT/i, /^CONCLUSION$/i,
+  ];
+
+  state.paragraphs.forEach((para, pi) => {
+    const text = para.text.trim();
+    const isChapter = chapterPatterns.some(p => p.test(text));
+    const isAllCapsHeading = text.length > 3 && text.length < 80 && text === text.toUpperCase() && /[A-Z]/.test(text);
+    if (isChapter || isAllCapsHeading) {
+      state.chapters.push({
+        title: text.length > 50 ? text.substring(0, 50) + '...' : text,
+        paraIndex: pi,
+        page: para.page || 1,
+      });
+    }
+  });
+  renderSidebarChapters();
+}
+
+function renderSidebarChapters() {
+  const container = $('#sidebarChapters');
+  container.innerHTML = '';
+  if (state.chapters.length === 0) {
+    container.innerHTML = '<div class="no-chapters">No chapters detected.<br>Chapters are auto-detected from headings.</div>';
+    return;
+  }
+  state.chapters.forEach((ch, idx) => {
+    const item = document.createElement('div');
+    item.className = 'chapter-item';
+    item.dataset.chapterIdx = idx;
+    item.innerHTML = `
+      <span class="ch-num">${idx + 1}</span>
+      <span class="ch-name" title="${escHtml(ch.title)}">${escHtml(ch.title)}</span>
+      ${ch.page ? '<span class="ch-page">' + ch.page + '</span>' : ''}
+    `;
+    item.addEventListener('click', () => jumpToChapter(idx));
+    container.appendChild(item);
+  });
+  updateActiveChapter();
+}
+
+function jumpToChapter(idx) {
+  const ch = state.chapters[idx];
+  if (!ch) return;
+  for (let i = 0; i < state.units.length; i++) {
+    if (parseInt(state.units[i].dataset.paraIndex || '0') >= ch.paraIndex) { jumpTo(i); break; }
+  }
+}
+
+function updateActiveChapter() {
+  if (state.chapters.length === 0) return;
+  const currentPara = getCurrentParaIndex();
+  let activeIdx = 0;
+  for (let i = 0; i < state.chapters.length; i++) {
+    if (state.chapters[i].paraIndex <= currentPara) activeIdx = i;
+  }
+  $$('.chapter-item').forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+  const activeEl = $('.chapter-item.active');
+  if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  const pct = state.units.length > 0 ? Math.round(((state.currentIndex + 1) / state.units.length) * 100) : 0;
+  $('#sidebarPct').textContent = pct + '%';
+  $('#sidebarProgressFill').style.width = pct + '%';
+  if (state.totalPages > 0) {
+    const current = state.units[state.currentIndex];
+    const pg = current ? parseInt(current.dataset.page || '1') : 1;
+    $('#sidebarPageInfo').textContent = 'Pg ' + pg + ' / ' + state.totalPages;
+  }
+}
+
+function toggleSidebar() { $('#sidebar').classList.toggle('open'); }
+
+// ── Reading Time Estimation ──
+function updateReadingTime() {
+  const info = $('#readingTimeInfo');
+  if (state.units.length === 0) { info.style.display = 'none'; return; }
+  info.style.display = '';
+
+  const currentPara = getCurrentParaIndex();
+  let charsRemaining = 0;
+  let charsCurrChapterRemaining = 0;
+  let totalChars = 0;
+  let nextChapterPara = state.paragraphs.length;
+
+  // Find current and next chapter boundaries
+  let currentChapterName = '';
+  if (state.chapters.length > 0) {
+    let activeChIdx = 0;
+    for (let i = 0; i < state.chapters.length; i++) {
+      if (state.chapters[i].paraIndex <= currentPara) activeChIdx = i;
+    }
+    currentChapterName = state.chapters[activeChIdx].title;
+    nextChapterPara = (activeChIdx + 1 < state.chapters.length)
+      ? state.chapters[activeChIdx + 1].paraIndex
+      : state.paragraphs.length;
+  }
+
+  state.paragraphs.forEach((para, pi) => {
+    const chars = para.text.replace(/\s/g, '').length;
+    totalChars += chars;
+    if (pi > currentPara) {
+      charsRemaining += chars;
+      if (pi < nextChapterPara) charsCurrChapterRemaining += chars;
+    }
+  });
+
+  const cpm = 1000;
+  const bookMinsLeft = Math.ceil(charsRemaining / cpm);
+  const chapterMinsLeft = Math.ceil(charsCurrChapterRemaining / cpm);
+
+  const chName = currentChapterName.length > 20
+    ? currentChapterName.substring(0, 20) + '...'
+    : currentChapterName;
+
+  if (state.chapters.length > 0) {
+    $('#rtLine1').innerHTML = '<span class="rt-accent">' + escHtml(chName) + '</span> &middot; ' + formatTime(chapterMinsLeft) + ' &middot; ' + formatTime(bookMinsLeft) + ' total';
+  } else {
+    const pct = totalChars > 0 ? Math.round((1 - charsRemaining / totalChars) * 100) : 0;
+    $('#rtLine1').textContent = formatTime(bookMinsLeft) + ' left &middot; ' + pct + '%';
+  }
+}
+
+function formatTime(mins) {
+  if (mins < 1) return '< 1 min';
+  if (mins < 60) return mins + ' min';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h + 'h ' + (m > 0 ? m + 'm' : '');
+}
+
+function setMode(mode) {
+  const wasPlaying = state.playing;
+  if (wasPlaying) pause();
+  const oldMode = state.mode;
+  const currentUnit = state.units[state.currentIndex];
+  let targetParaIndex = 0;
+  if (currentUnit) targetParaIndex = parseInt(currentUnit.dataset.paraIndex || '0');
+
+  state.mode = mode;
+  updateModeButtons();
+  updateSpeedLabel();
+
+  if (mode === 'line' || oldMode === 'line') {
+    renderText();
+  } else {
+    collectUnits();
+  }
+
+  if (state.units.length > 0) {
+    let bestIdx = 0;
+    for (let i = 0; i < state.units.length; i++) {
+      if (parseInt(state.units[i].dataset.paraIndex || '0') >= targetParaIndex) { bestIdx = i; break; }
+    }
+    state.currentIndex = bestIdx;
+    updateFocus();
+    updateProgress();
+  }
+  if (wasPlaying) play();
+  saveSettings();
+}
+
+function updateModeButtons() {
+  $$('#modeGroup .btn').forEach(b => b.classList.toggle('active', b.dataset.mode === state.mode));
+}
+
+function setFont(font) {
+  document.body.classList.remove('font-serif', 'font-sans', 'font-mono');
+  document.body.classList.add('font-' + font);
+}
+
+function applyFontSize() { readerContent.style.fontSize = state.fontSize + 'rem'; }
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const themes = ['dark', 'light', 'sepia'];
+  const current = themes.indexOf(html.dataset.theme);
+  html.dataset.theme = themes[(current + 1) % 3];
+  updateThemeIcon();
+  saveSettings();
+}
+
+function updateThemeIcon() {
+  const theme = document.documentElement.dataset.theme;
+  const btn = $('#themeToggle');
+  if (theme === 'dark') btn.textContent = '\u263D';
+  else if (theme === 'light') btn.textContent = '\u2600';
+  else btn.textContent = '\uD83D\uDCDC';
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+function toggleHelp() { helpOverlay.classList.toggle('active'); }
+
+// ── Document ID ──
+function hashText(text) {
+  let hash = 0;
+  const sample = text.substring(0, 2000);
+  for (let i = 0; i < sample.length; i++) {
+    const ch = sample.charCodeAt(i);
+    hash = ((hash << 5) - hash) + ch;
+    hash |= 0;
+  }
+  return 'doc_' + Math.abs(hash).toString(36);
+}
+
+// ── Session Persistence ──
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem('thefocusreader_sessions') || '{}'); } catch(e) { return {}; }
+}
+
+function saveSession() {
+  if (!state.documentId || state.paragraphs.length === 0) return;
+  const sessions = getSessions();
+  sessions[state.documentId] = {
+    title: state.documentTitle, paraIndex: getCurrentParaIndex(), mode: state.mode,
+    currentIndex: state.currentIndex, totalUnits: state.units.length, rawText: state.rawText,
+    lastRead: Date.now(), bookmarks: (sessions[state.documentId] && sessions[state.documentId].bookmarks) || [],
+  };
+  localStorage.setItem('thefocusreader_sessions', JSON.stringify(sessions));
+}
+
+function getCurrentParaIndex() {
+  const current = state.units[state.currentIndex];
+  return current ? parseInt(current.dataset.paraIndex || '0') : 0;
+}
+
+function deleteSession(docId) {
+  const sessions = getSessions();
+  delete sessions[docId];
+  localStorage.setItem('thefocusreader_sessions', JSON.stringify(sessions));
+  renderSavedSessions();
+}
+
+function resumeSession(docId) {
+  const sessions = getSessions();
+  const session = sessions[docId];
+  if (!session || !session.rawText) return;
+  state.rawText = session.rawText;
+  state.documentId = docId;
+  state.documentTitle = session.title;
+  state.mode = session.mode || 'sentence';
+  updateModeButtons();
+  updateSpeedLabel();
+  processText(session.rawText);
+  const targetPara = session.paraIndex || 0;
+  if (state.units.length > 0) {
+    let bestIdx = 0;
+    for (let i = 0; i < state.units.length; i++) {
+      if (parseInt(state.units[i].dataset.paraIndex || '0') >= targetPara) { bestIdx = i; break; }
+    }
+    state.currentIndex = bestIdx;
+    updateFocus();
+    updateProgress();
+  }
+}
+
+function renderSavedSessions() {
+  const sessions = getSessions();
+  const entries = Object.entries(sessions).sort((a, b) => (b[1].lastRead || 0) - (a[1].lastRead || 0));
+  const container = $('#sessionList');
+  const wrapper = $('#savedSessions');
+  if (entries.length === 0) { wrapper.style.display = 'none'; return; }
+  wrapper.style.display = '';
+  container.innerHTML = '';
+  entries.forEach(([docId, session]) => {
+    const pct = session.totalUnits > 0 ? Math.round(((session.currentIndex || 0) + 1) / session.totalUnits * 100) : 0;
+    const ago = timeAgo(session.lastRead);
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    card.innerHTML = `
+      <div class="session-info">
+        <div class="session-title">${escHtml(session.title)}</div>
+        <div class="session-meta">${pct}% read &middot; ${ago}</div>
+      </div>
+      <div class="session-progress-bar"><div class="session-progress-fill" style="width:${pct}%"></div></div>
+      <button class="session-delete" title="Remove">&times;</button>
+    `;
+    card.querySelector('.session-info').addEventListener('click', () => resumeSession(docId));
+    card.querySelector('.session-progress-bar').addEventListener('click', () => resumeSession(docId));
+    card.querySelector('.session-delete').addEventListener('click', (e) => { e.stopPropagation(); deleteSession(docId); });
+    container.appendChild(card);
+  });
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+// ── Bookmarks ──
+function getBookmarks() {
+  if (!state.documentId) return [];
+  const sessions = getSessions();
+  return (sessions[state.documentId] && sessions[state.documentId].bookmarks) || [];
+}
+
+function addBookmark(name) {
+  if (!state.documentId) return;
+  const sessions = getSessions();
+  if (!sessions[state.documentId]) return;
+  const bm = {
+    name: name || 'Bookmark ' + (getBookmarks().length + 1),
+    paraIndex: getCurrentParaIndex(), mode: state.mode, unitIndex: state.currentIndex, created: Date.now(),
+  };
+  sessions[state.documentId].bookmarks = sessions[state.documentId].bookmarks || [];
+  sessions[state.documentId].bookmarks.push(bm);
+  localStorage.setItem('thefocusreader_sessions', JSON.stringify(sessions));
+  showToast('Bookmark saved: ' + bm.name);
+}
+
+function deleteBookmark(idx) {
+  const sessions = getSessions();
+  if (!sessions[state.documentId]) return;
+  sessions[state.documentId].bookmarks.splice(idx, 1);
+  localStorage.setItem('thefocusreader_sessions', JSON.stringify(sessions));
+  renderBookmarksList();
+}
+
+function jumpToBookmark(bm) {
+  if (bm.mode && bm.mode !== state.mode) setMode(bm.mode);
+  const targetPara = bm.paraIndex || 0;
+  let bestIdx = 0;
+  for (let i = 0; i < state.units.length; i++) {
+    if (parseInt(state.units[i].dataset.paraIndex || '0') >= targetPara) { bestIdx = i; break; }
+  }
+  jumpTo(bestIdx);
+  toggleBookmarks();
+}
+
+function renderBookmarksList() {
+  const bookmarks = getBookmarks();
+  const container = $('#bookmarksList');
+  container.innerHTML = '';
+  if (bookmarks.length === 0) {
+    container.innerHTML = '<div class="no-bookmarks">No bookmarks yet. Press <b>B</b> while reading to add one.</div>';
+    return;
+  }
+  bookmarks.forEach((bm, idx) => {
+    const item = document.createElement('div');
+    item.className = 'bookmark-item';
+    item.innerHTML = `
+      <span class="bookmark-icon">&#128278;</span>
+      <div class="bookmark-details">
+        <div class="bookmark-name">${escHtml(bm.name)}</div>
+        <div class="bookmark-pos">Para ${bm.paraIndex + 1} &middot; ${bm.mode} mode &middot; ${timeAgo(bm.created)}</div>
+      </div>
+      <button class="bookmark-delete" title="Delete">&times;</button>
+    `;
+    item.querySelector('.bookmark-details').addEventListener('click', () => jumpToBookmark(bm));
+    item.querySelector('.bookmark-icon').addEventListener('click', () => jumpToBookmark(bm));
+    item.querySelector('.bookmark-delete').addEventListener('click', (e) => { e.stopPropagation(); deleteBookmark(idx); });
+    container.appendChild(item);
+  });
+}
+
+function toggleBookmarks() {
+  const overlay = $('#bookmarksOverlay');
+  overlay.classList.toggle('active');
+  if (overlay.classList.contains('active')) renderBookmarksList();
+}
+
+function showToast(msg) {
+  const toast = $('#bookmarkToast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function promptBookmarkName() {
+  const name = prompt('Bookmark name:', 'Bookmark ' + (getBookmarks().length + 1));
+  if (name !== null) addBookmark(name.trim() || undefined);
+}
+
+// ── Click handlers ──
+readerContent.addEventListener('click', (e) => {
+  let target = e.target;
+  if (state.mode === 'line') target = target.closest('.line');
+  else if (state.mode === 'sentence') target = target.closest('.sentence');
+  else target = target.closest('.para');
+  if (!target) return;
+  const idx = state.units.indexOf(target);
+  if (idx >= 0) jumpTo(idx);
+});
+
+// ── Event Listeners ──
+$$('#modeGroup .btn').forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+speedSlider.addEventListener('input', () => {
+  state.speed = parseInt(speedSlider.value);
+  updateSpeedLabel();
+  saveSettings();
+  if (state.playing) { clearTimeout(state.timer); advance(); }
+});
+
+$('#pageInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); e.target.blur(); }
+});
+$('#pageInput').addEventListener('change', (e) => { const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); });
+
+function stepSpeed(delta) {
+  speedSlider.value = Math.max(1, Math.min(100, parseInt(speedSlider.value) + delta));
+  state.speed = parseInt(speedSlider.value);
+  updateSpeedLabel();
+  saveSettings();
+  if (state.playing) { clearTimeout(state.timer); advance(); }
+}
+$('#speedDown').addEventListener('click', () => stepSpeed(-1));
+$('#speedUp').addEventListener('click', () => stepSpeed(1));
+
+playPauseBtn.addEventListener('click', togglePlay);
+$('#prevBtn').addEventListener('click', goPrev);
+$('#nextBtn').addEventListener('click', goNext);
+
+$('#progressBar').addEventListener('click', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  jumpTo(Math.round(pct * (state.units.length - 1)));
+});
+
+$('#fontUp').addEventListener('click', () => { state.fontSize = Math.min(2.5, state.fontSize + 0.1); applyFontSize(); updateFontSizeDisplay(); saveSettings(); });
+$('#fontDown').addEventListener('click', () => { state.fontSize = Math.max(0.7, state.fontSize - 0.1); applyFontSize(); updateFontSizeDisplay(); saveSettings(); });
+$('#fontSelect').addEventListener('change', (e) => { setFont(e.target.value); saveSettings(); });
+
+// Width control
+const widthMap = { narrow: '50ch', medium: '65ch', wide: '85ch', full: '100%' };
+$$('#widthGroup .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('#widthGroup .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const w = btn.dataset.width;
+    readerContent.style.setProperty('--reading-width', widthMap[w]);
+    readerContent.style.maxWidth = widthMap[w];
+    try {
+      const s = JSON.parse(localStorage.getItem('thefocusreader_settings') || '{}');
+      s.readingWidth = w;
+      localStorage.setItem('thefocusreader_settings', JSON.stringify(s));
+    } catch(e) {}
+  });
+});
+
+// Fullscreen header peek on hover
+$('#headerHoverZone').addEventListener('mouseenter', () => {
+  $('.header').classList.add('peek');
+});
+$('.header').addEventListener('mouseleave', () => {
+  if (document.fullscreenElement) $('.header').classList.remove('peek');
+});
+
+// Settings tray toggle
+$('#settingsGear').addEventListener('click', () => {
+  $('#settingsTray').classList.toggle('open');
+  $('#settingsGear').classList.toggle('active');
+});
+function updateFontSizeDisplay() {
+  const el = $('#fontSizeDisplay');
+  if (el) el.textContent = state.fontSize.toFixed(1);
+}
+
+$('#sidebarToggle').addEventListener('click', toggleSidebar);
+$('#themeToggle').addEventListener('click', toggleTheme);
+$('#fullscreenBtn').addEventListener('click', toggleFullscreen);
+$('#helpBtn').addEventListener('click', toggleHelp);
+$('#bookmarkBtn').addEventListener('click', toggleBookmarks);
+$('#addBookmarkBtn').addEventListener('click', () => { promptBookmarkName(); renderBookmarksList(); });
+$('#newTextBtn').addEventListener('click', showWelcome);
+$('#bookmarksOverlay').addEventListener('click', (e) => { if (e.target === $('#bookmarksOverlay')) toggleBookmarks(); });
+
+fileInput.addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) await handleFile(file); });
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', async (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); const file = e.dataTransfer.files[0]; if (file) await handleFile(file); });
+
+async function handleFile(file) {
+  loadingSpinner.classList.add('active');
+  dropZone.style.display = 'none';
+  try {
+    let text;
+    if (file.name.endsWith('.pdf')) text = await parsePDF(file);
+    else text = await file.text();
+    state.documentId = hashText(text);
+    state.documentTitle = file.name.replace(/\.[^.]+$/, '');
+    processText(text);
+  } catch (err) {
+    alert('Error reading file: ' + err.message);
+    dropZone.style.display = '';
+  } finally {
+    loadingSpinner.classList.remove('active');
+  }
+}
+
+$('#pasteBtn').addEventListener('click', () => { const text = pasteText.value.trim(); if (text.length > 0) processText(text); });
+
+// ── Keyboard Shortcuts ──
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  switch(e.key) {
+    case ' ': e.preventDefault(); if (state.units.length > 0) togglePlay(); break;
+    case 'ArrowRight': e.preventDefault(); goNext(); break;
+    case 'ArrowLeft': e.preventDefault(); goPrev(); break;
+    case 'ArrowUp':
+      e.preventDefault();
+      speedSlider.value = Math.min(100, parseInt(speedSlider.value) + 5);
+      state.speed = parseInt(speedSlider.value); updateSpeedLabel(); saveSettings();
+      if (state.playing) { clearTimeout(state.timer); advance(); } break;
+    case 'ArrowDown':
+      e.preventDefault();
+      speedSlider.value = Math.max(1, parseInt(speedSlider.value) - 5);
+      state.speed = parseInt(speedSlider.value); updateSpeedLabel(); saveSettings();
+      if (state.playing) { clearTimeout(state.timer); advance(); } break;
+    case '1': setMode('line'); break;
+    case '2': setMode('sentence'); break;
+    case '3': setMode('paragraph'); break;
+    case 'd': case 'D': toggleTheme(); break;
+    case 'f': case 'F': toggleFullscreen(); break;
+    case '=': case '+': state.fontSize = Math.min(2.5, state.fontSize + 0.1); applyFontSize(); saveSettings(); break;
+    case '-': case '_': state.fontSize = Math.max(0.7, state.fontSize - 0.1); applyFontSize(); saveSettings(); break;
+    case 'c': case 'C': toggleSidebar(); break;
+    case 'b': case 'B': if (state.units.length > 0) promptBookmarkName(); break;
+    case '?': toggleHelp(); break;
+    case 'Escape':
+      if ($('#bookmarksOverlay').classList.contains('active')) toggleBookmarks();
+      else if (helpOverlay.classList.contains('active')) toggleHelp();
+      else if ($('.app-body').classList.contains('active')) showWelcome();
+      break;
+  }
+});
+
+helpOverlay.addEventListener('click', (e) => { if (e.target === helpOverlay) toggleHelp(); });
+
+// ── Bottom Bar Auto-Hide ──
+let bottomBarTimer = null;
+
+function showBottomBar() {
+  bottomBar.classList.add('visible');
+  clearTimeout(bottomBarTimer);
+  bottomBarTimer = setTimeout(hideBottomBar, 2500);
+}
+
+function hideBottomBar() {
+  // Don't hide if paused or hovering
+  if (!state.playing) return;
+  bottomBar.classList.remove('visible');
+}
+
+// Show on hover zone
+$('#bottomHoverZone').addEventListener('mouseenter', showBottomBar);
+// Keep visible while hovering the bar itself
+bottomBar.addEventListener('mouseenter', () => { clearTimeout(bottomBarTimer); bottomBar.classList.add('visible'); });
+bottomBar.addEventListener('mouseleave', () => { if (state.playing) bottomBarTimer = setTimeout(hideBottomBar, 1500); });
+
+// Show on any mouse movement in reader, then auto-hide
+document.addEventListener('mousemove', () => {
+  if ($('.app-body') && $('.app-body').classList.contains('active')) {
+    showBottomBar();
+  }
+});
+
+// Always show when paused
+const _origPause = pause;
+// Override handled inline — pause already exists, so hook into it via updateProgress
+// Instead, use a MutationObserver-free approach: check in showBottomBar
+
+// ── Init ──
+loadSettings();
+updateThemeIcon();
+updateSpeedLabel();
+applyFontSize();
+updateFontSizeDisplay();
+renderSavedSessions();
+</script>
+</body>
+</html>
