@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TheFocusReader — Focus Reading</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg' fill='none'%3E%3Crect width='32' height='32' rx='6' fill='%23d4a574'/%3E%3Cpath d='M5 24V9c0-.7.4-1.4 1.4-1.7C9 6.6 13 7 16 9c3-2 7-2.4 9.6-1.7 1 .3 1.4 1 1.4 1.7v15' stroke='%230f0f0f' stroke-width='1.8' stroke-linecap='round'/%3E%3Cpath d='M16 9v15' stroke='%230f0f0f' stroke-width='1' stroke-dasharray='2 2' opacity='.3'/%3E%3Cline x1='9' y1='14' x2='14' y2='14' stroke='%230f0f0f' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='9' y1='17.5' x2='13' y2='17.5' stroke='%230f0f0f' stroke-width='1' stroke-linecap='round' opacity='.25'/%3E%3Cline x1='9' y1='21' x2='12.5' y2='21' stroke='%230f0f0f' stroke-width='1' stroke-linecap='round' opacity='.25'/%3E%3Cline x1='18' y1='14' x2='23' y2='14' stroke='%230f0f0f' stroke-width='1' stroke-linecap='round' opacity='.25'/%3E%3Cline x1='18' y1='17.5' x2='22.5' y2='17.5' stroke='%230f0f0f' stroke-width='1' stroke-linecap='round' opacity='.25'/%3E%3Cline x1='18' y1='21' x2='22' y2='21' stroke='%230f0f0f' stroke-width='1' stroke-linecap='round' opacity='.25'/%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -131,21 +132,16 @@ body::after {
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .logo-mark {
-  width: 22px;
-  height: 22px;
-  background: linear-gradient(135deg, var(--accent), rgba(212,165,116,0.4));
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  color: #fff;
-  font-weight: 700;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
-.logo-text span { color: var(--accent); }
+.logo-text .the { color: var(--text-muted); font-weight: 400; }
+.logo-text .focus { color: var(--text); font-weight: 600; }
+.logo-text .brand-accent { color: var(--accent); font-weight: 600; }
 
 /* Reading time in header */
 .reading-time-info {
@@ -1088,8 +1084,17 @@ body::after {
 <header class="header">
   <div class="header-main">
     <div class="logo">
-      <div class="logo-mark">F</div>
-      <div class="logo-text">Focus<span>Reader</span></div>
+      <svg class="logo-mark" viewBox="0 0 44 44" fill="none">
+        <path d="M6 34V12c0-1 .5-2 2-2.5C12 8.5 18 9 22 12c4-3 10-3.5 14-2.5 1.5.5 2 1.5 2 2.5v22" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M22 12v22" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 2" opacity="0.4"/>
+        <line x1="12" y1="18" x2="19" y2="18" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity="1"/>
+        <line x1="12" y1="22" x2="18" y2="22" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+        <line x1="12" y1="26" x2="17" y2="26" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+        <line x1="25" y1="18" x2="32" y2="18" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+        <line x1="25" y1="22" x2="31" y2="22" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+        <line x1="25" y1="26" x2="30" y2="26" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.25"/>
+      </svg>
+      <div class="logo-text"><span class="the">The</span><span class="focus">Focus</span><span class="brand-accent">Reader</span></div>
     </div>
     <div class="reading-time-info" id="readingTimeInfo" style="display:none;" title="Reading time estimate">
       <span id="rtLine1"></span>
