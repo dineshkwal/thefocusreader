@@ -3952,13 +3952,17 @@ const tour = {
           this.render();
         }, 800);
       } else if (action === 'swipe-down') {
-        // Settings closed — show header guide
+        // Settings closed — show next step or finish if last
         $('#tourOverlay').classList.remove('active');
-        setTimeout(() => {
-          this.step++;
-          $('#tourOverlay').classList.add('active');
-          this.render();
-        }, 800);
+        if (s.lastStep) {
+          setTimeout(() => this.finish(), 400);
+        } else {
+          setTimeout(() => {
+            this.step++;
+            $('#tourOverlay').classList.add('active');
+            this.render();
+          }, 800);
+        }
       } else if (action === 'fullscreen') {
         // Fullscreen toggled — finish tour
         setTimeout(() => this.finish(), 500);
