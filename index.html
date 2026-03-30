@@ -4140,6 +4140,14 @@ $('#tourOverlay').addEventListener('click', () => {
 });
 
 // ── Init ──
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+if (isIOS) {
+  $('#fullscreenBtn').style.display = 'none';
+  // Remove fullscreen tour step on iOS
+  tour.steps = tour.steps.filter(s => s.target !== 'header');
+  // Mark new last step
+  if (tour.steps.length > 0) tour.steps[tour.steps.length - 1].lastStep = true;
+}
 loadSettings();
 updateThemeIcon();
 updateSpeedLabel();
