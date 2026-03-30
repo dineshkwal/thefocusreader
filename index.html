@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -149,20 +149,34 @@ body::after {
   text-align: center;
   min-width: 0;
   font-family: var(--font-ui);
-  font-size: 0.62rem;
-  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+.rt-chapter {
+  font-size: 0.68rem;
+  color: var(--accent);
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
-.reading-time-info .rt-accent { color: var(--accent); font-weight: 500; }
+.rt-time {
+  font-size: 0.58rem;
+  color: var(--text-faded);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.rt-label { color: var(--accent); opacity: 0.7; font-weight: 500; }
+.rt-sep { color: var(--border-accent); opacity: 0.6; }
 
 .header-icons {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 /* Settings gear highlight when tray open */
@@ -333,100 +347,172 @@ body::after {
 /* ═══════════════════════════════════════
    WELCOME SCREEN
    ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   WELCOME / LANDING PAGE
+   ═══════════════════════════════════════ */
 .welcome {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  text-align: center;
-  gap: 28px;
+  padding: 0 20px;
   animation: fadeIn 0.6s ease;
+  overflow-y: auto;
+  gap: 0;
+}
+.welcome::before {
+  content: '';
+  flex: 0.3;
+  min-height: 8px;
+}
+.welcome::after {
+  content: '';
+  flex: 0.1;
+  min-height: 4px;
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
+.welcome-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 480px;
+  align-self: center;
+  width: 100%;
+  padding-top: 12px;
+}
+
+.hero-book-icon svg {
+  animation: bookFloat 3s ease-in-out infinite;
+}
+@keyframes bookFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 .welcome-title {
   font-family: var(--font-reading);
-  font-size: 2.2rem;
-  font-weight: 300;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-.welcome-title em {
-  color: var(--accent);
-  font-style: italic;
-}
-.welcome-sub {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-top: -16px;
+  font-size: 1.8rem;
   font-weight: 400;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
 }
-.welcome-features {
+.welcome-title .accent {
+  color: var(--accent);
+}
+
+.welcome-dots {
   display: flex;
   align-items: center;
+  gap: 8px;
   justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  color: var(--accent);
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  opacity: 0.7;
 }
-.feature-dot {
+.welcome-dots .dot-text {
+  font-size: 0.64rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.welcome-dots .dot-sep {
   width: 3px;
   height: 3px;
-  background: var(--accent);
   border-radius: 50%;
-  opacity: 0.5;
+  background: var(--accent);
+  opacity: 0.4;
   flex-shrink: 0;
 }
 
-.drop-zone {
+/* Action list */
+.action-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
-  max-width: 480px;
-  border: 1.5px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 44px 32px;
+}
+
+.act-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--control-bg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   position: relative;
+}
+.act-row:hover { border-color: var(--border-accent); }
+
+.act-row.primary {
+  border-color: var(--border-accent);
   background: var(--accent-soft);
 }
-.drop-zone:hover, .drop-zone.dragover {
+.act-row.primary:hover {
   border-color: var(--accent);
   background: var(--accent-glow);
-  box-shadow: 0 0 40px var(--accent-glow);
-}
-.drop-zone h2 {
-  font-family: var(--font-ui);
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-.drop-zone p {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  font-weight: 400;
-}
-.drop-zone input[type="file"] {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  box-shadow: 0 0 20px var(--accent-glow);
 }
 
-.divider-text {
-  color: var(--text-muted);
-  font-size: 0.72rem;
+.act-row.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.act-row input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.act-ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.act-ico.accent-bg { background: rgba(212,165,116,0.12); }
+.act-ico.subtle-bg { background: var(--control-bg); }
+.act-ico svg { width: 15px; height: 15px; color: var(--accent); }
+
+.act-info { flex: 1; text-align: left; }
+.act-name { font-size: 0.74rem; font-weight: 500; }
+.act-row.primary .act-name { color: var(--accent); }
+.act-desc { font-size: 0.52rem; color: var(--text-muted); margin-top: 1px; }
+
+.act-arrow { color: var(--text-faded); font-size: 0.85rem; flex-shrink: 0; }
+.act-row.primary .act-arrow { color: var(--accent); opacity: 0.4; }
+
+.act-badge {
+  font-size: 0.45rem;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  background: rgba(212,165,116,0.12);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.act-badge.soon {
+  background: var(--control-bg);
+  color: var(--text-faded);
 }
 
+/* Paste area (hidden by default, toggled) */
 .paste-area {
   width: 100%;
   max-width: 480px;
+  display: none;
+  margin-top: 12px;
+  align-self: center;
 }
+.paste-area.show { display: block; }
 .paste-area textarea {
   width: 100%;
   min-height: 100px;
@@ -448,76 +534,85 @@ body::after {
 }
 .paste-area textarea::placeholder { color: var(--text-muted); }
 .paste-btn {
-  margin-top: 10px;
-  padding: 10px 32px;
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px 20px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   font-size: 0.85rem;
   font-family: var(--font-ui);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  letter-spacing: 0.02em;
 }
-.paste-btn:hover { opacity: 0.85; box-shadow: 0 4px 16px var(--accent-glow); }
+.paste-btn:hover { opacity: 0.9; }
 
 /* ── Saved Sessions ── */
 .saved-sessions {
   width: 100%;
   max-width: 480px;
+  padding: 24px 0 18px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  align-self: center;
+  flex-shrink: 0;
 }
 .saved-sessions h3 {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  font-size: 0.55rem;
+  color: var(--text-faded);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  font-weight: 500;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 .session-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: var(--control-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 14px;
+  padding: 11px 14px;
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 6px;
 }
 .session-card:hover { border-color: var(--accent); background: var(--accent-soft); }
-.session-info { flex: 1; text-align: left; }
+.session-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.session-icon svg { width: 15px; height: 15px; }
+.session-info { flex: 1; text-align: left; min-width: 0; }
 .session-title {
-  font-size: 0.88rem;
+  font-size: 0.76rem;
   font-weight: 500;
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 300px;
 }
-.session-meta { font-size: 0.72rem; color: var(--text-muted); }
-.session-progress-bar {
-  width: 56px;
-  height: 3px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.session-progress-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 2px;
+.session-meta { font-size: 0.56rem; color: var(--text-muted); margin-top: 2px; }
+.session-pct {
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
 }
 .session-delete {
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-faded);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.85rem;
   padding: 4px;
   transition: color 0.2s;
   line-height: 1;
@@ -659,16 +754,15 @@ body::after {
 }
 
 .sidebar-toggle {
-  background: var(--control-bg);
-  border: 1px solid var(--border);
+  background: none;
+  border: 1px solid transparent;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 5px;
   border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  transition: all 0.2s;
-  min-width: 28px;
-  min-height: 28px;
+  transition: all 0.2s ease;
+  min-width: 30px;
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -738,9 +832,9 @@ body::after {
 }
 
 /* Font families */
-.font-serif { --font-reading: 'Newsreader', 'Georgia', serif; }
-.font-sans { --font-reading: 'DM Sans', sans-serif; }
-.font-mono { --font-reading: 'JetBrains Mono', monospace; }
+.font-serif .reader-content { font-family: 'Newsreader', 'Georgia', serif; }
+.font-sans .reader-content { font-family: 'DM Sans', sans-serif; }
+.font-mono .reader-content { font-family: 'JetBrains Mono', monospace; }
 
 /* ═══════════════════════════════════════
    BOTTOM BAR — Floating Glass Controls
@@ -808,8 +902,8 @@ body::after {
 }
 
 .play-btn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--accent);
   color: #fff;
@@ -821,6 +915,7 @@ body::after {
   font-size: 0.85rem;
   transition: all 0.2s;
   box-shadow: 0 2px 12px var(--accent-glow);
+  flex-shrink: 0;
 }
 .play-btn:hover { transform: scale(1.08); box-shadow: 0 4px 20px var(--accent-glow); }
 
@@ -864,25 +959,25 @@ body::after {
 .progress-bar-bg:hover .progress-fill::after { opacity: 1; }
 
 .progress-text {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  min-width: 72px;
+  min-width: 32px;
   text-align: right;
-  font-weight: 400;
+  font-weight: 500;
 }
 
-/* Page indicator */
-.page-indicator {
+/* Page nav */
+.page-nav {
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   white-space: nowrap;
   color: var(--text-muted);
 }
-.page-indicator input {
+.page-nav input {
   width: 36px;
   text-align: center;
   background: var(--control-bg);
@@ -890,11 +985,11 @@ body::after {
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 2px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
-.page-indicator input:focus { outline: none; border-color: var(--accent); }
+.page-nav input:focus { outline: none; border-color: var(--accent); }
 
 /* ═══════════════════════════════════════
    OVERLAYS — Glass Panels
@@ -1065,13 +1160,475 @@ body::after {
 /* ═══════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   MOBILE-ONLY ELEMENTS (hidden on desktop)
+   ═══════════════════════════════════════ */
+.mobile-reading-pulse,
+.mobile-backdrop,
+.mobile-doc-title,
+.mobile-close-btn,
+.mobile-center-play,
+.mobile-pause-sheet { display: none; }
+
 @media (max-width: 768px) {
-  .header { padding: 8px 14px; flex-wrap: wrap; gap: 8px; }
-  .reader { padding: 32px 18px 64px; }
-  .reader-content { font-size: 1.05rem; }
-  .speed-control input[type="range"] { width: 60px; }
-  .sidebar { width: 220px; transform: translateX(-220px); margin-left: -220px; }
-  .welcome-title { font-size: 1.6rem; }
+  /* ── Welcome: redesigned for mobile ── */
+  /* Mobile welcome tweaks */
+  .welcome { padding: 0 14px; }
+  .welcome-title { font-size: 1.5rem; }
+  .paste-area textarea { min-height: 70px; font-size: 0.82rem; }
+  .drop-cta { padding: 20px 16px; }
+  .saved-sessions { padding: 8px 0 16px; }
+
+  /* ── Header: transitions for slide in/out ── */
+  .header {
+    padding: 6px 14px;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  .header-main { padding: 4px 0; height: 40px; }
+
+  /* In reader: header as floating card with transitions */
+  body.mobile-playing .header,
+  body.mobile-paused .header,
+  body.mobile-settings .header {
+    position: fixed;
+    top: 8px; left: 10px; right: 10px;
+    border-radius: 16px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    z-index: 22;
+    padding: 4px 6px;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+  }
+  body.mobile-playing .header { transform: translateY(-120%); opacity: 0; pointer-events: none; }
+  body.mobile-paused .header,
+  body.mobile-settings .header { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  body.mobile-paused .header-main,
+  body.mobile-settings .header-main {
+    height: 44px;
+    padding: 2px 6px;
+  }
+
+  /* In reader: show doc title, hide logo and most buttons */
+  body.mobile-playing .logo,
+  body.mobile-paused .logo,
+  body.mobile-settings .logo { display: none; }
+  body.mobile-playing .mobile-doc-title,
+  body.mobile-paused .mobile-doc-title,
+  body.mobile-settings .mobile-doc-title { display: block; }
+  body.mobile-playing .mobile-close-btn,
+  body.mobile-paused .mobile-close-btn,
+  body.mobile-settings .mobile-close-btn { display: inline-flex; }
+
+  /* Header icons: only gear, fullscreen + close on mobile reader */
+  body.mobile-playing #sidebarToggle,
+  body.mobile-playing #bookmarkBtn,
+  body.mobile-playing #themeToggle,
+  body.mobile-playing #helpBtn,
+  body.mobile-playing #newTextBtn,
+  body.mobile-playing #settingsGear,
+  body.mobile-playing .reading-time-info,
+  body.mobile-paused #sidebarToggle,
+  body.mobile-paused #bookmarkBtn,
+  body.mobile-paused #themeToggle,
+  body.mobile-paused #helpBtn,
+  body.mobile-paused #newTextBtn,
+  body.mobile-paused #settingsGear,
+  body.mobile-paused .reading-time-info,
+  body.mobile-settings #sidebarToggle,
+  body.mobile-settings #bookmarkBtn,
+  body.mobile-settings #themeToggle,
+  body.mobile-settings #helpBtn,
+  body.mobile-settings #newTextBtn,
+  body.mobile-settings #settingsGear,
+  body.mobile-settings .reading-time-info { display: none !important; }
+
+  /* Hide page nav on mobile bottom bar */
+  body.mobile-paused .page-nav { display: none; }
+
+  .mobile-doc-title {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    padding: 0 4px;
+  }
+
+  /* Circular icon buttons in mobile header */
+  body.mobile-playing .header-icons .btn-icon,
+  body.mobile-playing .header-icons .settings-gear,
+  body.mobile-paused .header-icons .btn-icon,
+  body.mobile-paused .header-icons .settings-gear,
+  body.mobile-settings .header-icons .btn-icon,
+  body.mobile-settings .header-icons .settings-gear {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--control-bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-close-btn {
+    font-size: 1rem !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    border-radius: 50% !important;
+    background: var(--control-bg) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  /* ── Settings tray: hidden on mobile ── */
+  .settings-tray { display: none !important; }
+
+  /* ── Sidebar: hidden on mobile ── */
+  .sidebar { display: none !important; }
+
+  /* ── Reader area ── */
+  .reader { padding: 24px 18px 60px; }
+  .reader-content { font-size: 1rem; line-height: 1.85; max-width: 100% !important; }
+
+  /* ── Bottom bar: controlled by mobile state ── */
+  body.mobile-playing .bottom-bar { transform: translateY(100%) !important; opacity: 0 !important; }
+  /* Hide desktop bottom bar on mobile in all states */
+  body.mobile-playing .bottom-bar,
+  body.mobile-paused .bottom-bar,
+  body.mobile-settings .bottom-bar { transform: translateY(100%) !important; opacity: 0 !important; }
+
+  /* Show mobile center play + pause sheet */
+  .mobile-center-play {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%) scale(0.8);
+    z-index: 18;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  body.mobile-paused .mobile-center-play {
+    opacity: 1;
+    transform: translate(-50%, -70%) scale(1);
+    pointer-events: auto;
+  }
+
+  .mobile-play-big {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 4px 30px var(--accent-glow);
+    cursor: pointer;
+  }
+
+  .mobile-play-hint {
+    font-size: 0.58rem;
+    color: var(--text-faded);
+  }
+
+  /* Mobile pause bottom sheet */
+  .mobile-pause-sheet {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    position: fixed;
+    bottom: 8px; left: 10px; right: 10px;
+    background: var(--bg-surface);
+    border-radius: 16px;
+    padding: 4px 20px 6px;
+    z-index: 18;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transform: translateY(calc(100% + 20px));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+  }
+  body.mobile-paused .mobile-pause-sheet {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mps-handle-area {
+    display: flex; justify-content: center;
+    padding: 10px 0 6px;
+    cursor: grab;
+    touch-action: none;
+  }
+  .mps-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    align-self: center;
+  }
+
+  .mps-info-section { padding: 0 18px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .mps-chapter { text-align: center; }
+  .mps-chapter-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+  .mps-time {
+    font-size: 0.62rem;
+    color: var(--text-faded);
+  }
+  .mps-time .t-label {
+    color: var(--accent);
+    opacity: 0.7;
+    font-weight: 500;
+  }
+  .mps-time .t-sep {
+    margin: 0 6px;
+    opacity: 0.3;
+  }
+
+  .mps-progress { display: flex; flex-direction: column; gap: 5px; }
+  .mps-bar {
+    height: 4px;
+    background: var(--control-bg);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .mps-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .mps-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.58rem;
+    color: var(--text-faded);
+  }
+  .mps-pct {
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* Settings section — hidden by default, shown via mobile-settings state */
+  .mps-settings-section {
+    display: none;
+    padding: 0 16px 16px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mps-ss-label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.55rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .mps-live {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 0.52rem; color: var(--accent); opacity: 0.7; font-weight: 500;
+  }
+  .mps-live-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+    animation: msLivePulse 1.5s ease-in-out infinite;
+  }
+  .mps-ss-div { height: 1px; background: var(--border); }
+
+  .bottom-bar { padding: 12px 16px; gap: 10px; }
+
+  /* Hide prev/next on mobile — auto-advance handles it */
+  .playback-controls #prevBtn,
+  .playback-controls #nextBtn { display: none; }
+
+  /* ── Reading pulse indicator ── */
+  body.mobile-playing .mobile-reading-pulse { display: flex; }
+  .mobile-reading-pulse {
+    display: none;
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    align-items: center;
+    gap: 6px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .mobile-reading-pulse .pulse-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: mobilePulse 2s ease-in-out infinite;
+  }
+  .mobile-reading-pulse span {
+    font-size: 0.58rem;
+    color: var(--text-faded);
+    font-family: var(--font-ui);
+  }
+  @keyframes mobilePulse {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.3); }
+  }
+
+  /* ── Mobile backdrop ── */
+  .mobile-backdrop {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(0,0,0,0);
+    pointer-events: none;
+    transition: background 0.35s ease;
+  }
+  body.mobile-paused .mobile-backdrop { background: rgba(0,0,0,0.45); pointer-events: auto; }
+  body.mobile-paused .reader-content .focused,
+  body.mobile-paused .reader-content .faded { opacity: 0.15 !important; transition: opacity 0.3s ease; }
+  body.mobile-settings .mobile-backdrop { background: rgba(0,0,0,0.15); pointer-events: auto; }
+
+  /* In settings state, show expanded pause sheet */
+  body.mobile-settings .mobile-pause-sheet {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  body.mobile-settings .mobile-pause-sheet .mps-settings-section { display: flex; }
+  body.mobile-settings .mobile-pause-sheet .mps-info-section { display: none; }
+  body.mobile-settings .mobile-pause-sheet .mps-pull-hint { display: none; }
+  /* Hide center play in settings */
+  body.mobile-settings .mobile-center-play { opacity: 0; pointer-events: none; }
+  body.mobile-settings .reader {
+    padding-bottom: 220px;
+  }
+
+  .ms-handle {
+    width: 32px; height: 3px; border-radius: 2px;
+    background: var(--border); align-self: center;
+  }
+
+  .ms-label {
+    font-size: 0.58rem; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted);
+  }
+
+  .ms-div { height: 1px; background: var(--border); }
+
+  /* Row 1: Mode */
+  .ms-mode-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .ms-live {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 0.5rem; color: rgba(212,165,116,0.5); font-weight: 500;
+  }
+  .ms-live-dot {
+    width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+    animation: msLivePulse 1.5s ease-in-out infinite;
+  }
+  @keyframes msLivePulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  .ms-pill-tray {
+    display: flex; gap: 3px;
+    background: var(--control-bg); border-radius: 10px; padding: 3px;
+  }
+  .ms-pill {
+    flex: 1; padding: 8px 0; text-align: center;
+    border-radius: 8px; background: transparent;
+    color: var(--text-muted); border: none;
+    font-size: 0.72rem; font-weight: 500;
+    font-family: var(--font-ui); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ms-pill.active {
+    background: rgba(212,165,116,0.15);
+    color: var(--accent);
+  }
+
+  /* Row 2: Speed centered */
+  .ms-speed-row {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .ms-speed-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--control-bg); border: 1px solid var(--border);
+    color: var(--text-muted); font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .ms-speed-center {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    min-width: 60px;
+  }
+  .ms-speed-val {
+    font-size: 1.1rem; color: var(--accent);
+    font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  .ms-speed-unit {
+    font-size: 0.5rem; color: var(--text-faded);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* Row 3: Theme | Font | Size */
+  .ms-bottom-strip {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ms-strip-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .ms-tiny-label {
+    font-size: 0.5rem; color: var(--text-faded);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .ms-v-sep {
+    width: 1px; height: 24px; background: var(--border); flex-shrink: 0;
+  }
+  .ms-wide-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; height: 30px;
+    border-radius: 8px;
+    background: var(--control-bg); border: 1px solid var(--border);
+    color: var(--text-muted); cursor: pointer;
+    font-family: var(--font-ui);
+    transition: all 0.2s;
+  }
+  .ms-wide-btn:active { background: var(--accent-soft); }
+  .ms-wb-icon { display: flex; align-items: center; }
+  .ms-wb-icon svg { width: 13px; height: 13px; }
+  .ms-wb-text { font-size: 0.6rem; font-weight: 500; }
+  .ms-font-preview { font-size: 0.78rem; font-weight: 500; }
+  .ms-size-ctrl {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .ms-size-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--control-bg); border: 1px solid var(--border);
+    color: var(--text-muted); font-size: 0.78rem;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .ms-size-val {
+    font-size: 0.68rem; color: var(--text-muted);
+    min-width: 22px; text-align: center; font-weight: 500;
+  }
+
+  /* ── Bottom hover zone: disabled on mobile ── */
+  .bottom-hover-zone { display: none !important; }
+  .header-hover-zone { display: none !important; }
 }
 </style>
 </head>
@@ -1096,21 +1653,24 @@ body::after {
       </svg>
       <div class="logo-text"><span class="the">The</span><span class="focus">Focus</span><span class="brand-accent">Reader</span></div>
     </div>
-    <div class="reading-time-info" id="readingTimeInfo" style="display:none;" title="Reading time estimate">
-      <span id="rtLine1"></span>
+    <div class="mobile-doc-title" id="mobileDocTitle"></div>
+    <div class="reading-time-info" id="readingTimeInfo" style="display:none;">
+      <div class="rt-chapter" id="rtChapter"></div>
+      <div class="rt-time" id="rtTime"></div>
     </div>
     <div class="header-icons">
-      <button class="sidebar-toggle" id="sidebarToggle" title="Chapters (C)">&#9776;</button>
-      <button class="btn-icon" id="bookmarkBtn" title="Bookmarks (B)">&#128278;</button>
-      <button class="btn-icon" id="themeToggle" title="Theme (D)">&#9789;</button>
-      <button class="btn-icon" id="fullscreenBtn" title="Fullscreen (F)">&#x26F6;</button>
-      <button class="btn-icon settings-gear" id="settingsGear" title="Settings">&#9881;</button>
-      <button class="btn-icon" id="helpBtn" title="Shortcuts (?)">?</button>
-      <button class="btn" id="newTextBtn" style="display:none;" title="Load new text">New</button>
+      <button class="sidebar-toggle reader-only" id="sidebarToggle" title="Chapters (C)" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
+      <button class="btn-icon reader-only" id="bookmarkBtn" title="Bookmarks (B)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14a1 1 0 0 1 1 1v16.5l-7-4.5-7 4.5V4a1 1 0 0 1 1-1z"/></svg></button>
+      <button class="btn-icon" id="themeToggle" title="Theme (D)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+      <button class="btn-icon reader-only" id="fullscreenBtn" title="Fullscreen (F)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+      <button class="btn-icon reader-only settings-gear" id="settingsGear" title="Settings" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.08 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.77 1.02 1.51 1.08H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/></svg></button>
+      <button class="btn-icon reader-only" id="helpBtn" title="Shortcuts (?)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+      <button class="btn reader-only" id="newTextBtn" style="display:none;" title="Load new text">+ New</button>
+      <button class="btn-icon mobile-close-btn" id="mobileCloseBtn">&times;</button>
     </div>
   </div>
   <!-- Expandable Settings Tray -->
-  <div class="settings-tray" id="settingsTray">
+  <div class="settings-tray reader-only" id="settingsTray" style="display:none;">
     <div class="tray-group">
       <span class="tray-label">Mode</span>
       <div class="mode-group" id="modeGroup">
@@ -1156,28 +1716,63 @@ body::after {
 
 <!-- Welcome Screen -->
 <div class="welcome" id="welcomeScreen">
-  <div class="welcome-title">Read with <em>focus</em></div>
-  <div class="welcome-sub">Drop a PDF or paste text to begin your focused reading session</div>
-  <div class="drop-zone" id="dropZone">
-    <h2>Drop a PDF here</h2>
-    <p>or click to browse your files</p>
-    <input type="file" id="fileInput" accept=".pdf,.txt">
+  <div class="welcome-hero">
+    <div class="hero-book-icon">
+      <svg width="42" height="42" viewBox="0 0 44 44" fill="none">
+        <path d="M6 34V12c0-1 .5-2 2-2.5C12 8.5 18 9 22 12c4-3 10-3.5 14-2.5 1.5.5 2 1.5 2 2.5v22" stroke="var(--accent)" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M22 12v22" stroke="var(--accent)" stroke-width="0.8" stroke-dasharray="2 2" opacity="0.3"/>
+        <line x1="12" y1="18" x2="19" y2="18" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="12" y1="22" x2="18" y2="22" stroke="var(--accent)" stroke-width="0.8" stroke-linecap="round" opacity="0.2"/>
+        <line x1="25" y1="18" x2="32" y2="18" stroke="var(--accent)" stroke-width="0.8" stroke-linecap="round" opacity="0.2"/>
+      </svg>
+    </div>
+    <div class="welcome-title">Read with <span class="accent">focus</span></div>
+    <div class="welcome-dots">
+      <span class="dot-text">Distraction-free</span>
+      <span class="dot-sep"></span>
+      <span class="dot-text">Beautiful</span>
+      <span class="dot-sep"></span>
+      <span class="dot-text">Deep reading</span>
+    </div>
+    <!-- Action rows -->
+    <div class="action-list">
+      <div class="act-row primary" id="actOpenPdf">
+        <div class="act-ico accent-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="act-info"><div class="act-name">Open PDF</div><div class="act-desc">Drop or browse your files</div></div>
+        <div class="act-badge">Popular</div>
+        <div class="act-arrow">&#8250;</div>
+        <input type="file" id="fileInput" accept=".pdf,.txt">
+      </div>
+      <div class="act-row" id="actPasteText">
+        <div class="act-ico subtle-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></div>
+        <div class="act-info"><div class="act-name">Paste text</div><div class="act-desc">From articles, emails, or anywhere</div></div>
+        <div class="act-arrow">&#8250;</div>
+      </div>
+      <div class="act-row disabled" id="actEnterUrl">
+        <div class="act-ico subtle-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="act-info"><div class="act-name">Enter URL</div><div class="act-desc">Paste a web article link</div></div>
+        <div class="act-badge soon">Coming soon</div>
+        <div class="act-arrow">&#8250;</div>
+      </div>
+      <div class="act-row" id="actTrySample">
+        <div class="act-ico subtle-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+        <div class="act-info"><div class="act-name">Try a sample</div><div class="act-desc">Experience focus reading instantly</div></div>
+        <div class="act-arrow">&#8250;</div>
+      </div>
+    </div>
+  </div>
+  <!-- Paste area (hidden, toggled) -->
+  <div class="paste-area" id="pasteArea">
+    <textarea id="pasteText" placeholder="Paste your text here..."></textarea>
+    <button class="paste-btn" id="pasteBtn">Start Reading</button>
   </div>
   <div class="loading-spinner" id="loadingSpinner">
     <div class="spinner"></div>
     <span>Extracting text...</span>
   </div>
-  <div class="divider-text">or paste text</div>
-  <div class="paste-area">
-    <textarea id="pasteText" placeholder="Paste your text here..."></textarea>
-    <button class="paste-btn" id="pasteBtn">Start Reading</button>
-  </div>
   <div class="saved-sessions" id="savedSessions" style="display:none;">
     <h3>Continue Reading</h3>
     <div id="sessionList"></div>
-  </div>
-  <div class="shortcuts-hint">
-    <b>Space</b> play/pause &middot; <b>Arrow keys</b> navigate &middot; <b>B</b> bookmark &middot; <b>?</b> all shortcuts
   </div>
 </div>
 
@@ -1209,6 +1804,80 @@ body::after {
   <div class="progress-slim-fill" id="progressSlimFill" style="width:0%"></div>
 </div>
 
+<!-- Mobile: reading pulse indicator -->
+<div class="mobile-reading-pulse" id="mobileReadingPulse">
+  <span class="pulse-dot"></span>
+  <span>reading</span>
+</div>
+
+<!-- Mobile: backdrop for paused/settings -->
+<div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+<!-- Mobile: settings panel (drops from top) -->
+
+<!-- Mobile: centered play button (paused state) -->
+<div class="mobile-center-play" id="mobileCenterPlay">
+  <button class="mobile-play-big" id="mobilePlayBig">&#9654;</button>
+</div>
+
+<!-- Mobile: paused bottom sheet (draggable — collapsed=info, expanded=settings) -->
+<div class="mobile-pause-sheet" id="mobilePauseSheet">
+  <div class="mps-handle-area" id="mpsHandle"><div class="mps-handle"></div></div>
+  <!-- Collapsed: chapter info -->
+  <div class="mps-info-section" id="mpsInfoSection">
+    <div class="mps-chapter">
+      <div class="mps-chapter-name" id="mpsChapterName"></div>
+      <div class="mps-time" id="mpsTime"></div>
+    </div>
+    <div class="mps-progress">
+      <div class="mps-bar"><div class="mps-bar-fill" id="mpsBarFill" style="width:0%"></div></div>
+      <div class="mps-meta">
+        <span class="mps-page" id="mpsPage"></span>
+        <span class="mps-pct" id="mpsPct">0%</span>
+      </div>
+    </div>
+  </div>
+  <!-- Expanded: settings -->
+  <div class="mps-settings-section" id="mpsSettingsSection">
+    <div class="mps-ss-label"><span>Focus Mode</span><span class="mps-live"><span class="mps-live-dot"></span>live preview</span></div>
+    <div class="ms-pill-tray" id="mobileModeGroup">
+      <button class="ms-pill" data-mode="line">Line</button>
+      <button class="ms-pill active" data-mode="sentence">Sentence</button>
+      <button class="ms-pill" data-mode="paragraph">Para</button>
+    </div>
+    <div class="mps-ss-div"></div>
+    <div class="ms-speed-row">
+      <button class="ms-speed-btn" id="mobileSpeedDown">&minus;</button>
+      <div class="ms-speed-center">
+        <div class="ms-speed-val" id="mobileSpeedVal">4.4s</div>
+        <div class="ms-speed-unit">speed per sentence</div>
+      </div>
+      <button class="ms-speed-btn" id="mobileSpeedUp">+</button>
+    </div>
+    <div class="mps-ss-div"></div>
+    <div class="ms-bottom-strip">
+      <div class="ms-strip-item">
+        <div class="ms-tiny-label">Theme</div>
+        <button class="ms-wide-btn" id="mobileThemeCycle"><span class="ms-wb-icon" id="mobileThemeIcon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="ms-wb-text" id="mobileThemeLabel">Dark</span></button>
+      </div>
+      <div class="ms-v-sep"></div>
+      <div class="ms-strip-item">
+        <div class="ms-tiny-label">Size</div>
+        <div class="ms-size-ctrl">
+          <button class="ms-size-btn" id="mobileFontDown">A&minus;</button>
+          <div class="ms-size-val" id="mobileFontVal">1.2</div>
+          <button class="ms-size-btn" id="mobileFontUp">A+</button>
+        </div>
+      </div>
+      <div class="ms-v-sep"></div>
+      <div class="ms-strip-item">
+        <div class="ms-tiny-label">Font</div>
+        <button class="ms-wide-btn" id="mobileFontCycle"><span class="ms-wb-icon ms-font-preview" id="mobileFontIcon" style="font-family:'Newsreader',serif;">Aa</span><span class="ms-wb-text" id="mobileFontLabel">Serif</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Hover zone to trigger bottom bar -->
 <div class="bottom-hover-zone" id="bottomHoverZone"></div>
 
@@ -1223,10 +1892,10 @@ body::after {
     <div class="progress-bar-bg" id="progressBar">
       <div class="progress-fill" id="progressFill" style="width:0%"></div>
     </div>
-    <span class="progress-text" id="progressText">0 / 0</span>
+    <span class="progress-text" id="progressText">0%</span>
   </div>
-  <div class="page-indicator" id="pageIndicator" style="display:none;">
-    <span>Pg</span>
+  <div class="page-nav" id="pageNav" style="display:none;">
+    <span>Page</span>
     <input type="number" id="pageInput" min="1" value="1" title="Jump to page">
     <span id="pageTotalLabel">/ 0</span>
   </div>
@@ -1299,7 +1968,7 @@ const progressText = $('#progressText');
 const speedSlider = $('#speedSlider');
 const speedLabel = $('#speedLabel');
 const playPauseBtn = $('#playPauseBtn');
-const dropZone = $('#dropZone');
+const dropZone = $('#actOpenPdf');
 const fileInput = $('#fileInput');
 const pasteText = $('#pasteText');
 const loadingSpinner = $('#loadingSpinner');
@@ -1388,15 +2057,58 @@ async function parsePDF(file) {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   state.totalPages = pdf.numPages;
-  let fullText = '';
 
+  // Extract PDF metadata for real book title
+  try {
+    const metadata = await pdf.getMetadata();
+    console.log('PDF metadata:', JSON.stringify(metadata?.info));
+    const pdfTitle = metadata?.info?.Title;
+    if (pdfTitle && pdfTitle.trim().length > 2) {
+      state.documentTitle = pdfTitle.trim();
+      console.log('Title from metadata:', state.documentTitle);
+    }
+  } catch(e) { console.log('Metadata error:', e); }
+
+  let fullText = '';
+  let firstPageItems = null;
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
+    // Save first few pages' items for title detection
+    if (i <= 3 && !firstPageItems && content.items.length > 0) {
+      const hasSubstantialText = content.items.some(item => item.str.trim().length > 3);
+      if (hasSubstantialText) firstPageItems = { items: content.items, page: i };
+    }
     const pageText = extractPageText(content, page);
     fullText += pageText;
     if (i < pdf.numPages) fullText += PAGE_BREAK;
   }
+
+  // Smart title detection: find largest text on first substantial page
+  if (!state.documentTitle && firstPageItems) {
+    try {
+      const items = firstPageItems.items.filter(item => item.str.trim().length > 1);
+      if (items.length > 0) {
+        // Group items by font size, find the largest
+        const sizeGroups = {};
+        items.forEach(item => {
+          const size = Math.round(item.transform ? item.transform[0] : (item.height || 12));
+          if (!sizeGroups[size]) sizeGroups[size] = [];
+          sizeGroups[size].push(item.str.trim());
+        });
+        const maxSize = Math.max(...Object.keys(sizeGroups).map(Number));
+        const titleParts = sizeGroups[maxSize];
+        if (titleParts && titleParts.length > 0) {
+          const candidate = titleParts.join(' ').replace(/\s+/g, ' ').trim();
+          // Only use if it looks like a real title (3-100 chars, not all caps numbers/symbols)
+          if (candidate.length >= 3 && candidate.length <= 100 && /[a-zA-Z]/.test(candidate)) {
+            state.documentTitle = candidate;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+
   return fullText;
 }
 
@@ -1736,10 +2448,16 @@ function scrollToUnit(el) {
   const container = reader;
   const rect = el.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-  const centerY = containerRect.top + containerRect.height / 2;
+  // Account for settings sheet covering bottom of screen
+  let visibleHeight = containerRect.height;
+  if (mobileUI.isMobile() && mobileUI.state === 'settings') {
+    const sheet = $('#mobileSettingsPanel');
+    if (sheet) visibleHeight = Math.min(visibleHeight, window.innerHeight - sheet.getBoundingClientRect().height - 20);
+  }
+  const centerY = containerRect.top + visibleHeight / 2;
   const elCenterY = rect.top + rect.height / 2;
   const diff = elCenterY - centerY;
-  if (Math.abs(diff) > containerRect.height * 0.3) {
+  if (Math.abs(diff) > visibleHeight * 0.25) {
     container.scrollBy({ top: diff, behavior: 'smooth' });
   }
 }
@@ -1750,8 +2468,9 @@ function play() {
   state.playing = true;
   playPauseBtn.innerHTML = '&#9646;&#9646;';
   advance();
-  // Auto-hide bottom bar after delay
-  if (typeof bottomBarTimer !== 'undefined') {
+  mobileUI.setState('playing');
+  // Auto-hide bottom bar after delay (desktop)
+  if (!mobileUI.isMobile() && typeof bottomBarTimer !== 'undefined') {
     clearTimeout(bottomBarTimer);
     bottomBarTimer = setTimeout(() => { bottomBar.classList.remove('visible'); }, 2500);
   }
@@ -1763,9 +2482,13 @@ function pause() {
   state.timer = null;
   playPauseBtn.innerHTML = '&#9654;';
   saveSession();
-  // Always show bar when paused
-  bottomBar.classList.add('visible');
-  if (typeof bottomBarTimer !== 'undefined') clearTimeout(bottomBarTimer);
+  mobileUI.setState('paused');
+  syncMobilePauseSheet();
+  // Always show bar when paused (desktop)
+  if (!mobileUI.isMobile()) {
+    bottomBar.classList.add('visible');
+    if (typeof bottomBarTimer !== 'undefined') clearTimeout(bottomBarTimer);
+  }
 }
 
 function togglePlay() {
@@ -1817,7 +2540,7 @@ function updateProgress() {
   if (state.units.length === 0) return;
   const pct = ((state.currentIndex + 1) / state.units.length) * 100;
   progressFill.style.width = pct + '%';
-  progressText.textContent = (state.currentIndex + 1) + ' / ' + state.units.length;
+  progressText.textContent = Math.round(pct) + '%';
   // Update slim progress line
   const slimFill = $('#progressSlimFill');
   if (slimFill) slimFill.style.width = pct + '%';
@@ -1828,9 +2551,9 @@ function updateProgress() {
 
 // ── Page Indicator ──
 function updatePageIndicator() {
-  const indicator = $('#pageIndicator');
-  if (state.totalPages <= 0) { indicator.style.display = 'none'; return; }
-  indicator.style.display = '';
+  const nav = $('#pageNav');
+  if (!nav || state.totalPages <= 0) { if (nav) nav.style.display = 'none'; return; }
+  nav.style.display = '';
   $('#pageTotalLabel').textContent = '/ ' + state.totalPages;
   const current = state.units[state.currentIndex];
   if (current) { $('#pageInput').value = parseInt(current.dataset.page || '1'); }
@@ -1850,15 +2573,23 @@ function showReader() {
   bottomBar.classList.add('active');
   $('#progressSlim').classList.add('active');
   $('#bottomHoverZone').classList.add('active');
-  $('#newTextBtn').style.display = '';
+  $$('.reader-only').forEach(el => el.style.display = '');
   $('#sidebarTitle').textContent = state.documentTitle;
   detectChapters();
-  showBottomBar(); // show initially
+  if (mobileUI.isMobile()) {
+    mobileUI.enter();
+    $('#mobileDocTitle').textContent = state.documentTitle;
+    // Delay to let units/chapters populate first
+    setTimeout(() => syncMobilePauseSheet(), 100);
+  } else {
+    showBottomBar();
+  }
 }
 
 function showWelcome() {
   saveSession();
   pause();
+  mobileUI.exit();
   $('.app-body').classList.remove('active');
   bottomBar.classList.remove('active', 'visible');
   $('#progressSlim').classList.remove('active');
@@ -1872,10 +2603,13 @@ function showWelcome() {
   state.currentIndex = 0;
   state.documentId = null;
   state.documentTitle = '';
+  state.isSample = false;
   state.rawText = '';
   state.totalPages = 0;
-  $('#newTextBtn').style.display = 'none';
+  $$('.reader-only').forEach(el => el.style.display = 'none');
   pasteText.value = '';
+  // Reset paste area visibility
+  $('#pasteArea').classList.remove('show');
   renderSavedSessions();
 }
 
@@ -1995,15 +2729,12 @@ function updateReadingTime() {
   const bookMinsLeft = Math.ceil(charsRemaining / cpm);
   const chapterMinsLeft = Math.ceil(charsCurrChapterRemaining / cpm);
 
-  const chName = currentChapterName.length > 20
-    ? currentChapterName.substring(0, 20) + '...'
-    : currentChapterName;
-
   if (state.chapters.length > 0) {
-    $('#rtLine1').innerHTML = '<span class="rt-accent">' + escHtml(chName) + '</span> &middot; ' + formatTime(chapterMinsLeft) + ' &middot; ' + formatTime(bookMinsLeft) + ' total';
+    $('#rtChapter').textContent = currentChapterName;
+    $('#rtTime').innerHTML = '<span class="rt-label">Chapter:</span> ' + formatTime(chapterMinsLeft) + ' left &nbsp;<span class="rt-sep">|</span>&nbsp; <span class="rt-label">Book:</span> ' + formatTime(bookMinsLeft) + ' left';
   } else {
-    const pct = totalChars > 0 ? Math.round((1 - charsRemaining / totalChars) * 100) : 0;
-    $('#rtLine1').textContent = formatTime(bookMinsLeft) + ' left &middot; ' + pct + '%';
+    $('#rtChapter').textContent = state.documentTitle || '';
+    $('#rtTime').textContent = formatTime(bookMinsLeft) + ' left';
   }
 }
 
@@ -2017,7 +2748,16 @@ function formatTime(mins) {
 
 function setMode(mode) {
   const wasPlaying = state.playing;
-  if (wasPlaying) pause();
+  const preserveMobileState = mobileUI.isMobile() ? mobileUI.state : null;
+
+  // Stop playback without triggering mobile state change
+  if (wasPlaying) {
+    state.playing = false;
+    clearTimeout(state.timer);
+    state.timer = null;
+    playPauseBtn.innerHTML = '&#9654;';
+  }
+
   const oldMode = state.mode;
   const currentUnit = state.units[state.currentIndex];
   let targetParaIndex = 0;
@@ -2042,7 +2782,17 @@ function setMode(mode) {
     updateFocus();
     updateProgress();
   }
-  if (wasPlaying) play();
+
+  // Resume playback without triggering mobile state change
+  if (wasPlaying) {
+    state.playing = true;
+    playPauseBtn.innerHTML = '&#9646;&#9646;';
+    advance();
+  }
+
+  // Restore mobile state if it was preserved
+  if (preserveMobileState) mobileUI.setState(preserveMobileState);
+
   saveSettings();
 }
 
@@ -2069,15 +2819,27 @@ function toggleTheme() {
 function updateThemeIcon() {
   const theme = document.documentElement.dataset.theme;
   const btn = $('#themeToggle');
-  if (theme === 'dark') btn.textContent = '\u263D';
-  else if (theme === 'light') btn.textContent = '\u2600';
-  else btn.textContent = '\uD83D\uDCDC';
+  if (theme === 'dark') btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  else if (theme === 'light') btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  else btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
 }
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
   else document.exitFullscreen();
+  updateFullscreenIcon();
 }
+
+function updateFullscreenIcon() {
+  const btn = $('#fullscreenBtn');
+  if (!btn) return;
+  if (document.fullscreenElement) {
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  } else {
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  }
+}
+document.addEventListener('fullscreenchange', updateFullscreenIcon);
 
 function toggleHelp() { helpOverlay.classList.toggle('active'); }
 
@@ -2099,7 +2861,7 @@ function getSessions() {
 }
 
 function saveSession() {
-  if (!state.documentId || state.paragraphs.length === 0) return;
+  if (!state.documentId || state.paragraphs.length === 0 || state.isSample) return;
   const sessions = getSessions();
   sessions[state.documentId] = {
     title: state.documentTitle, paraIndex: getCurrentParaIndex(), mode: state.mode,
@@ -2158,15 +2920,16 @@ function renderSavedSessions() {
     const card = document.createElement('div');
     card.className = 'session-card';
     card.innerHTML = `
+      <div class="session-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
       <div class="session-info">
         <div class="session-title">${escHtml(session.title)}</div>
         <div class="session-meta">${pct}% read &middot; ${ago}</div>
       </div>
-      <div class="session-progress-bar"><div class="session-progress-fill" style="width:${pct}%"></div></div>
+      <div class="session-pct">${pct}%</div>
       <button class="session-delete" title="Remove">&times;</button>
     `;
     card.querySelector('.session-info').addEventListener('click', () => resumeSession(docId));
-    card.querySelector('.session-progress-bar').addEventListener('click', () => resumeSession(docId));
+    card.querySelector('.session-icon').addEventListener('click', () => resumeSession(docId));
     card.querySelector('.session-delete').addEventListener('click', (e) => { e.stopPropagation(); deleteSession(docId); });
     container.appendChild(card);
   });
@@ -2271,6 +3034,8 @@ function promptBookmarkName() {
 
 // ── Click handlers ──
 readerContent.addEventListener('click', (e) => {
+  // On mobile, tap always pauses/resumes — no jump-to-unit
+  if (mobileUI.isMobile()) return;
   let target = e.target;
   if (state.mode === 'line') target = target.closest('.line');
   else if (state.mode === 'sentence') target = target.closest('.sentence');
@@ -2290,10 +3055,6 @@ speedSlider.addEventListener('input', () => {
   if (state.playing) { clearTimeout(state.timer); advance(); }
 });
 
-$('#pageInput').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') { e.preventDefault(); const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); e.target.blur(); }
-});
-$('#pageInput').addEventListener('change', (e) => { const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); });
 
 function stepSpeed(delta) {
   speedSlider.value = Math.max(1, Math.min(100, parseInt(speedSlider.value) + delta));
@@ -2344,11 +3105,7 @@ $('.header').addEventListener('mouseleave', () => {
   if (document.fullscreenElement) $('.header').classList.remove('peek');
 });
 
-// Settings tray toggle
-$('#settingsGear').addEventListener('click', () => {
-  $('#settingsTray').classList.toggle('open');
-  $('#settingsGear').classList.toggle('active');
-});
+// Settings tray toggle — handled in mobile UI section for both desktop & mobile
 function updateFontSizeDisplay() {
   const el = $('#fontSizeDisplay');
   if (el) el.textContent = state.fontSize.toFixed(1);
@@ -2365,23 +3122,24 @@ $('#bookmarksOverlay').addEventListener('click', (e) => { if (e.target === $('#b
 
 fileInput.addEventListener('change', async (e) => { const file = e.target.files[0]; if (file) await handleFile(file); });
 
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-dropZone.addEventListener('drop', async (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); const file = e.dataTransfer.files[0]; if (file) await handleFile(file); });
+$('#pageInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); e.target.blur(); }
+});
+$('#pageInput').addEventListener('change', (e) => { const pg = parseInt(e.target.value); if (!isNaN(pg)) jumpToPage(pg); });
+
+// (drag/drop handled in mobile UI section)
 
 async function handleFile(file) {
   loadingSpinner.classList.add('active');
-  dropZone.style.display = 'none';
   try {
     let text;
     if (file.name.endsWith('.pdf')) text = await parsePDF(file);
     else text = await file.text();
     state.documentId = hashText(text);
-    state.documentTitle = file.name.replace(/\.[^.]+$/, '');
+    if (!state.documentTitle) state.documentTitle = file.name.replace(/\.[^.]+$/, '');
     processText(text);
   } catch (err) {
     alert('Error reading file: ' + err.message);
-    dropZone.style.display = '';
   } finally {
     loadingSpinner.classList.remove('active');
   }
@@ -2441,14 +3199,15 @@ function hideBottomBar() {
   bottomBar.classList.remove('visible');
 }
 
-// Show on hover zone
-$('#bottomHoverZone').addEventListener('mouseenter', showBottomBar);
+// Show on hover zone (desktop only)
+$('#bottomHoverZone').addEventListener('mouseenter', () => { if (!mobileUI.isMobile()) showBottomBar(); });
 // Keep visible while hovering the bar itself
 bottomBar.addEventListener('mouseenter', () => { clearTimeout(bottomBarTimer); bottomBar.classList.add('visible'); });
 bottomBar.addEventListener('mouseleave', () => { if (state.playing) bottomBarTimer = setTimeout(hideBottomBar, 1500); });
 
-// Show on any mouse movement in reader, then auto-hide
+// Show on any mouse movement in reader, then auto-hide (desktop only)
 document.addEventListener('mousemove', () => {
+  if (mobileUI.isMobile()) return;
   if ($('.app-body') && $('.app-body').classList.contains('active')) {
     showBottomBar();
   }
@@ -2458,6 +3217,383 @@ document.addEventListener('mousemove', () => {
 const _origPause = pause;
 // Override handled inline — pause already exists, so hook into it via updateProgress
 // Instead, use a MutationObserver-free approach: check in showBottomBar
+
+// ── Mobile UI ──
+const mobileUI = {
+  state: null,
+  isMobile() { return window.matchMedia('(max-width: 768px)').matches; },
+  setState(newState) {
+    if (!this.isMobile()) return;
+    document.body.classList.remove('mobile-playing', 'mobile-paused', 'mobile-settings');
+    this.state = newState;
+    if (newState) document.body.classList.add('mobile-' + newState);
+    if (newState === 'settings') syncMobileSettingsUI();
+  },
+  enter() { this.setState('paused'); },
+  exit() {
+    this.state = null;
+    document.body.classList.remove('mobile-playing', 'mobile-paused', 'mobile-settings');
+  }
+};
+
+function syncMobileSettingsUI() {
+  if (!mobileUI.isMobile()) return;
+  // Speed — show interval with unit
+  const sv = $('#mobileSpeedVal');
+  if (sv) sv.textContent = parseFloat($('#speedLabel').textContent).toFixed(1) + 's';
+  // Speed unit label
+  const su = document.querySelector('.ms-speed-unit');
+  if (su) {
+    const modeLabels = { line: 'speed per line', sentence: 'speed per sentence', paragraph: 'speed per paragraph' };
+    su.textContent = modeLabels[state.mode] || 'per unit';
+  }
+  // Mode
+  $$('#mobileModeGroup .ms-pill').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === state.mode));
+  // Theme icon + label
+  const themeIcon = $('#mobileThemeIcon');
+  const themeLabel = $('#mobileThemeLabel');
+  if (themeIcon) {
+    const theme = document.documentElement.dataset.theme;
+    if (theme === 'dark') themeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    else if (theme === 'light') themeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></svg>';
+    else themeIcon.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+    const labels = { dark: 'Dark', light: 'Light', sepia: 'Sepia' };
+    if (themeLabel) themeLabel.textContent = labels[theme] || 'Dark';
+  }
+  // Font preview + label
+  const fontIcon = $('#mobileFontIcon');
+  const fontLabel = $('#mobileFontLabel');
+  if (fontIcon) {
+    const fonts = { serif: "'Newsreader',serif", sans: "'DM Sans',sans-serif", mono: "monospace" };
+    const fontNames = { serif: 'Serif', sans: 'Sans', mono: 'Mono' };
+    const currentFont = $('#fontSelect').value;
+    fontIcon.style.fontFamily = fonts[currentFont] || fonts.serif;
+    if (fontLabel) fontLabel.textContent = fontNames[currentFont] || 'Serif';
+  }
+  // Font size
+  const fv = $('#mobileFontVal');
+  if (fv) fv.textContent = state.fontSize.toFixed(1);
+}
+
+function syncMobilePauseSheet() {
+  if (!mobileUI.isMobile()) return;
+  // Progress
+  const pct = state.units.length > 0 ? Math.round(((state.currentIndex + 1) / state.units.length) * 100) : 0;
+  const fill = $('#mpsBarFill');
+  if (fill) fill.style.width = pct + '%';
+  const pctEl = $('#mpsPct');
+  if (pctEl) pctEl.textContent = pct + '%';
+
+  // Page
+  const pageEl = $('#mpsPage');
+  if (pageEl) {
+    if (state.totalPages > 0) {
+      const current = state.units[state.currentIndex];
+      const pg = current ? parseInt(current.dataset.page || '1') : 1;
+      pageEl.textContent = 'Page ' + pg + ' / ' + state.totalPages;
+    } else {
+      pageEl.textContent = '';
+    }
+  }
+
+  // Chapter + time
+  const chNameEl = $('#mpsChapterName');
+  const timeEl = $('#mpsTime');
+  if (!chNameEl || !timeEl) return;
+
+  const currentPara = getCurrentParaIndex();
+  let charsRemaining = 0, charsCurrChapterRemaining = 0;
+  let nextChapterPara = state.paragraphs.length;
+  let currentChapterName = '';
+
+  if (state.chapters.length > 0) {
+    let activeChIdx = 0;
+    for (let i = 0; i < state.chapters.length; i++) {
+      if (state.chapters[i].paraIndex <= currentPara) activeChIdx = i;
+    }
+    currentChapterName = state.chapters[activeChIdx].title;
+    nextChapterPara = (activeChIdx + 1 < state.chapters.length)
+      ? state.chapters[activeChIdx + 1].paraIndex : state.paragraphs.length;
+  }
+
+  state.paragraphs.forEach((para, pi) => {
+    const chars = para.text.replace(/\s/g, '').length;
+    if (pi > currentPara) {
+      charsRemaining += chars;
+      if (pi < nextChapterPara) charsCurrChapterRemaining += chars;
+    }
+  });
+
+  const cpm = 1000;
+  const bookMinsLeft = Math.ceil(charsRemaining / cpm);
+  const chapterMinsLeft = Math.ceil(charsCurrChapterRemaining / cpm);
+
+  if (state.chapters.length > 0) {
+    chNameEl.textContent = currentChapterName;
+    timeEl.innerHTML = '<span class="t-label">Chapter:</span> ' + formatTime(chapterMinsLeft) + ' left <span class="t-sep">|</span> <span class="t-label">Book:</span> ' + formatTime(bookMinsLeft) + ' left';
+  } else {
+    chNameEl.textContent = state.documentTitle || '';
+    timeEl.textContent = formatTime(bookMinsLeft) + ' left';
+  }
+}
+
+// Mobile: big play button
+$('#mobilePlayBig').addEventListener('click', (e) => {
+  e.stopPropagation();
+  play();
+});
+
+// Mobile: pull-up/down sheet drag interaction
+(function() {
+  const sheet = $('#mobilePauseSheet');
+  if (!sheet) return;
+  let startY = 0, isDragging = false, startedOnInteractive = false;
+
+  sheet.addEventListener('touchstart', (e) => {
+    if (!mobileUI.isMobile()) return;
+    if (mobileUI.state !== 'paused' && mobileUI.state !== 'settings') return;
+    // Don't hijack touches on buttons/inputs inside the sheet
+    const tag = e.target.tagName;
+    startedOnInteractive = (tag === 'BUTTON' || tag === 'INPUT' || tag === 'SELECT' || e.target.closest('button, input, select'));
+    if (startedOnInteractive) return;
+    startY = e.touches[0].clientY;
+    isDragging = true;
+  }, { passive: true });
+
+  sheet.addEventListener('touchend', (e) => {
+    if (!isDragging || startedOnInteractive) { isDragging = false; return; }
+    isDragging = false;
+    const endY = e.changedTouches[0].clientY;
+    const diff = startY - endY;
+
+    if (diff > 30 && mobileUI.state === 'paused') {
+      // Swiped up — expand to settings with live preview
+      if (!state.playing && state.units.length > 0) {
+        state.playing = true;
+        playPauseBtn.innerHTML = '&#9646;&#9646;';
+        advance();
+      }
+      mobileUI.setState('settings');
+      syncMobileSettingsUI();
+    } else if (diff < -30 && mobileUI.state === 'settings') {
+      // Swiped down — collapse back to paused
+      pause();
+    }
+  }, { passive: true });
+
+  // Also allow tap on handle to toggle
+  $('#mpsHandle').addEventListener('click', (e) => {
+    if (!mobileUI.isMobile()) return;
+    e.stopPropagation();
+    if (mobileUI.state === 'paused') {
+      if (!state.playing && state.units.length > 0) {
+        state.playing = true;
+        playPauseBtn.innerHTML = '&#9646;&#9646;';
+        advance();
+      }
+      mobileUI.setState('settings');
+      syncMobileSettingsUI();
+    } else if (mobileUI.state === 'settings') {
+      pause();
+    }
+  });
+})();
+
+// Mobile: tap reader to pause/play (any tap on reader area)
+reader.addEventListener('click', (e) => {
+  if (!mobileUI.isMobile()) return;
+  if (!$('.app-body').classList.contains('active')) return;
+  if (mobileUI.state === 'playing') { pause(); }
+  else if (mobileUI.state === 'paused') { play(); }
+});
+
+// Mobile: backdrop tap
+$('#mobileBackdrop').addEventListener('click', () => {
+  if (mobileUI.state === 'settings') { pause(); }
+  else if (mobileUI.state === 'paused') play();
+});
+
+// Settings gear: mobile opens settings panel, desktop toggles tray
+$('#settingsGear').addEventListener('click', () => {
+  if (mobileUI.isMobile()) {
+    if (mobileUI.state === 'settings') {
+      mobileUI.setState('paused');
+    } else {
+      // Resume playing so user sees live preview
+      if (!state.playing && state.units.length > 0) {
+        state.playing = true;
+        playPauseBtn.innerHTML = '&#9646;&#9646;';
+        advance();
+      }
+      mobileUI.setState('settings');
+      syncMobileSettingsUI();
+    }
+  } else {
+    $('#settingsTray').classList.toggle('open');
+    $('#settingsGear').classList.toggle('active');
+  }
+});
+// Mobile: close button (back to welcome)
+$('#mobileCloseBtn').addEventListener('click', () => { mobileUI.exit(); showWelcome(); });
+
+// Action rows: Open PDF (file input is inside the row, handles itself via change event)
+// Drag and drop on the Open PDF row
+$('#actOpenPdf').addEventListener('dragover', (e) => { e.preventDefault(); $('#actOpenPdf').style.borderColor = 'var(--accent)'; });
+$('#actOpenPdf').addEventListener('dragleave', () => { $('#actOpenPdf').style.borderColor = ''; });
+$('#actOpenPdf').addEventListener('drop', async (e) => { e.preventDefault(); $('#actOpenPdf').style.borderColor = ''; const file = e.dataTransfer.files[0]; if (file) await handleFile(file); });
+
+// Action rows: Paste text
+$('#actPasteText').addEventListener('click', () => {
+  const pa = $('#pasteArea');
+  pa.classList.toggle('show');
+  if (pa.classList.contains('show')) pasteText.focus();
+});
+
+// Action rows: Try a sample
+$('#actTrySample').addEventListener('click', () => {
+  const sampleText = `CHAPTER 1: THE FORGOTTEN ART
+
+The most important thing in communication is hearing what isn't said. The art of reading subtleties, of understanding the weight behind silence, is what separates good listeners from great ones. And yet, somewhere along the way, we forgot how to truly read.
+
+Consider the last conversation you had that truly mattered. Not the pleasantries exchanged at the coffee shop, but the kind of conversation where something shifted — where understanding deepened, or a decision was made that would echo for years. In those moments, words are only part of the equation. The pauses between sentences carry meaning. The choice to look away or hold eye contact tells its own story.
+
+Reading is the same. When we read with intention — one sentence at a time, giving each thought the space it deserves — we begin to hear what the author isn't saying. We catch the nuances, the deliberate word choices, the structure that reveals deeper meaning.
+
+Most of us have forgotten how to read this way. We scan. We skim. We consume content like fast food, rushing through paragraphs to get to the conclusion. But the richest ideas don't live in conclusions — they live in the journey between sentences.
+
+CHAPTER 2: THE SCIENCE OF ATTENTION
+
+Our brains were not designed for the world we live in. Every notification, every headline, every flashing pixel competes for the same limited resource: our attention. And attention, unlike time, cannot be saved or stored. It can only be spent.
+
+Neuroscientists have discovered that deep reading activates entirely different neural pathways than skimming. When you read slowly and with focus, the brain engages regions associated with empathy, sensory processing, and long-term memory formation. You don't just understand the words — you feel them.
+
+In contrast, rapid scanning keeps the brain in a shallow processing mode. Information enters and exits without leaving a trace. This is why you can read an entire article and, moments later, struggle to recall a single detail. The words passed through you like water through a sieve.
+
+The solution isn't to read less. It's to read differently. To give your attention fully to one sentence before moving to the next. To treat each paragraph not as an obstacle between you and the conclusion, but as a destination in itself.
+
+CHAPTER 3: THE RHYTHM OF WORDS
+
+Every great writer has a rhythm. Hemingway's sentences are short, sharp, percussive — like stones skipping across water. Virginia Woolf's prose flows and meanders, pulling you into an interior world that feels more real than the room you're sitting in. Dostoevsky builds tension through accumulation, stacking clause upon clause until the weight becomes almost unbearable.
+
+When you read too quickly, you miss the rhythm entirely. It's like listening to music on fast-forward — you can identify the song, but you can't feel it. The melody disappears. The spaces between notes, which give music its emotional power, collapse into nothing.
+
+Focused reading restores the rhythm. It lets you feel the cadence of a well-crafted sentence, the deliberate pause of a period, the breathless rush of a long compound thought. You begin to hear the author's voice, not just their words.
+
+Try it now. Read the next sentence as slowly as you can, letting each word land before moving to the next. Notice how the meaning deepens when you give it time to unfold.
+
+CHAPTER 4: THE ARCHITECTURE OF UNDERSTANDING
+
+A book is not a sequence of sentences. It is an architecture — a carefully constructed building of ideas, where each paragraph supports the next, and the whole is greater than the sum of its parts.
+
+When you skim, you see the building from a distance. You can identify its shape, count its floors, note its color. But you never walk inside. You never discover the hidden room behind the staircase, the window that frames the garden just so, the way the light falls differently in each room throughout the day.
+
+Deep reading is walking through that building. It is opening every door, sitting in every chair, looking out of every window. It is discovering that what seemed like a simple structure from the outside contains infinities within.
+
+This is why some books reward multiple readings. Not because the words change, but because you do. Each time you enter the building, you notice something different. A doorway you missed before. A view you weren't ready to appreciate. A room that means something entirely new now that you've lived a little more.
+
+CHAPTER 5: THE PRACTICE OF STILLNESS
+
+There is a kind of courage in stillness. In a world that rewards constant motion, choosing to sit with a single page, a single paragraph, a single sentence — this is an act of quiet rebellion.
+
+The Zen tradition speaks of "beginner's mind" — the practice of approaching each moment as if experiencing it for the first time. When we read with beginner's mind, even familiar words become fresh. A sentence we've read a hundred times suddenly reveals a meaning we never noticed.
+
+This doesn't require effort so much as surrender. You don't force yourself to read slowly. You simply stop forcing yourself to read fast. You let go of the compulsion to finish, to get through it, to reach the end. You allow yourself to be exactly where you are in the text, without rushing toward where you think you should be.
+
+In this stillness, something remarkable happens. The boundary between reader and text begins to dissolve. You stop reading about an experience and start having one. The words become transparent, and what shines through them is pure meaning.
+
+CHAPTER 6: READING AS EMPATHY
+
+When you read a novel deeply, you don't just follow a character's story — you inhabit their consciousness. You feel their fears, share their hopes, suffer their disappointments. For a few hours, you live inside another mind.
+
+This is not metaphor. Brain imaging studies show that reading literary fiction activates the same neural networks involved in understanding other people's mental states. The more deeply you read, the more your brain practices empathy — building the same muscles you use to understand the people in your actual life.
+
+In an age of increasing polarization, this might be reading's most important gift. Every book is a bridge into a perspective you haven't lived. Every character is a person you haven't met. Every story is a world you haven't visited. But only if you read slowly enough to actually cross the bridge, meet the person, and visit the world.
+
+CHAPTER 7: THE DIGITAL PARADOX
+
+We have more access to text than any generation in human history. Libraries that once took lifetimes to assemble now fit in our pockets. The complete works of Shakespeare, the entire corpus of ancient philosophy, the latest research from every field — all available in seconds.
+
+And yet we read less deeply than ever before. The paradox of abundance is that it breeds superficiality. When everything is available, nothing feels essential. When you can read anything, you end up reading nothing — at least, nothing with the attention it deserves.
+
+The solution is not to read less, but to be more intentional about what you read and how you read it. Choose fewer things and read them more deeply. Treat a single essay with the same attention you'd give a conversation with someone you love.
+
+CHAPTER 8: THE GIFT OF TIME
+
+Reading is one of the few activities that actually slows down the experience of time. When you're deep in a book, hours can pass that feel like minutes — but the memories formed in those hours are rich and detailed, making the time feel expanded in retrospect.
+
+This is the gift of focused reading. It doesn't just help you understand ideas better. It gives you something increasingly rare: the experience of time that feels fully lived. Not time that slipped away while you scrolled, or evaporated while you multitasked, but time that you inhabited completely.
+
+Every sentence you read with full attention is a moment you were truly present. And a life made up of such moments — even if they're spent in a chair, with a book, in silence — is a life deeply lived.
+
+CHAPTER 9: BEGINNING AGAIN
+
+The beautiful thing about focused reading is that you can start anytime. Right now. With the very next sentence you read.
+
+You don't need special training or equipment. You don't need to meditate first or clear your schedule. You simply need to decide, for this one sentence, to be fully here. To let the words land. To notice not just what they say, but how they make you feel.
+
+And then you do it again with the next sentence. And the next.
+
+This is the entire practice. There is nothing more to it. And there is nothing less.`;
+  state.documentTitle = 'The Art of Focused Reading';
+  state.isSample = true;
+  processText(sampleText);
+});
+
+// Action rows: Enter URL (disabled for now)
+$('#actEnterUrl').addEventListener('click', () => {
+  // Coming soon
+});
+
+// Mobile settings: mode pills
+$$('#mobileModeGroup .ms-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setMode(btn.dataset.mode);
+    syncMobileSettingsUI();
+  });
+});
+
+// Mobile settings: theme cycle
+$('#mobileThemeCycle').addEventListener('click', () => {
+  toggleTheme();
+  syncMobileSettingsUI();
+});
+
+// Mobile settings: font cycle
+const fontCycleOrder = ['serif', 'sans', 'mono'];
+$('#mobileFontCycle').addEventListener('click', () => {
+  const current = $('#fontSelect').value;
+  const idx = fontCycleOrder.indexOf(current);
+  const next = fontCycleOrder[(idx + 1) % fontCycleOrder.length];
+  setFont(next);
+  $('#fontSelect').value = next;
+  saveSettings();
+  syncMobileSettingsUI();
+});
+
+// Mobile settings: speed
+$('#mobileSpeedDown').addEventListener('click', () => {
+  speedSlider.value = Math.max(1, parseInt(speedSlider.value) - 5);
+  state.speed = parseInt(speedSlider.value);
+  updateSpeedLabel(); saveSettings(); syncMobileSettingsUI();
+  if (state.playing) { clearTimeout(state.timer); advance(); }
+});
+$('#mobileSpeedUp').addEventListener('click', () => {
+  speedSlider.value = Math.min(100, parseInt(speedSlider.value) + 5);
+  state.speed = parseInt(speedSlider.value);
+  updateSpeedLabel(); saveSettings(); syncMobileSettingsUI();
+  if (state.playing) { clearTimeout(state.timer); advance(); }
+});
+
+// Mobile settings: font size
+$('#mobileFontDown').addEventListener('click', () => {
+  state.fontSize = Math.max(0.7, state.fontSize - 0.1);
+  applyFontSize(); saveSettings(); syncMobileSettingsUI();
+});
+$('#mobileFontUp').addEventListener('click', () => {
+  state.fontSize = Math.min(2.5, state.fontSize + 0.1);
+  applyFontSize(); saveSettings(); syncMobileSettingsUI();
+});
 
 // ── Init ──
 loadSettings();
