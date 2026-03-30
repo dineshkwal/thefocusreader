@@ -1158,6 +1158,206 @@ body::after {
 }
 
 /* ═══════════════════════════════════════
+   ONBOARDING TOUR
+   ═══════════════════════════════════════ */
+.tour-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.tour-overlay.active { display: block; animation: tourOverlayIn 0.5s ease; }
+@keyframes tourOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+.tour-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  transition: all 0.3s ease;
+}
+
+.tour-gesture {
+  position: absolute;
+  z-index: 102;
+  pointer-events: none;
+}
+
+.tour-gesture .gesture-hand {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(212,165,116,0.2);
+  border: 1.5px solid rgba(212,165,116,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #d4a574;
+}
+
+.tour-gesture.tap .gesture-hand {
+  animation: tourTap 1.5s ease-in-out infinite;
+}
+@keyframes tourTap {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(0.82); opacity: 1; }
+}
+
+.tour-gesture.swipe-up .gesture-hand {
+  animation: tourSwipeUp 1.5s ease-in-out infinite;
+}
+@keyframes tourSwipeUp {
+  0%, 100% { transform: translateY(10px); opacity: 0.5; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+.tour-spotlight {
+  position: absolute;
+  z-index: 101;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3000px rgba(0,0,0,0.7);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.tour-spotlight-rect {
+  position: absolute;
+  z-index: 101;
+  border-radius: 16px;
+  box-shadow: 0 0 0 3000px rgba(0,0,0,0.7);
+  border: 2px solid rgba(212,165,116,0.35);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+.tour-tooltip {
+  position: absolute;
+  z-index: 103;
+  background: var(--bg-surface);
+  border: 1px solid rgba(212,165,116,0.2);
+  border-radius: 16px;
+  padding: 14px 18px 12px;
+  width: calc(100% - 48px);
+  max-width: 320px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+  animation: tourFadeIn 0.3s ease;
+}
+
+/* Arrow pointing up from tooltip */
+.tour-tooltip .tour-arrow-up {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 10px;
+  overflow: hidden;
+}
+.tour-tooltip .tour-arrow-up::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(212,165,116,0.2);
+}
+
+/* Arrow pointing down from tooltip */
+.tour-tooltip .tour-arrow-down {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 10px;
+  overflow: hidden;
+}
+.tour-tooltip .tour-arrow-down::after {
+  content: '';
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(212,165,116,0.2);
+}
+
+/* Tour action hint (pulsing text) */
+.tour-action-hint {
+  font-size: 0.62rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 5px;
+  text-align: center;
+  animation: tourHintPulse 1.5s ease-in-out infinite;
+}
+@keyframes tourHintPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes tourFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.tour-tip-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.tour-tip-text {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.tour-tip-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.tour-step-counter {
+  font-size: 0.6rem;
+  color: var(--text-faded);
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-skip {
+  font-size: 0.6rem;
+  color: var(--text-faded);
+  cursor: pointer;
+}
+.tour-skip:hover { color: var(--text-muted); }
+
+.tour-next {
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tour-next:hover { opacity: 0.9; }
+
+/* ═══════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════ */
 /* ═══════════════════════════════════════
@@ -1662,7 +1862,7 @@ body::after {
       <button class="sidebar-toggle reader-only" id="sidebarToggle" title="Chapters (C)" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
       <button class="btn-icon reader-only" id="bookmarkBtn" title="Bookmarks (B)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14a1 1 0 0 1 1 1v16.5l-7-4.5-7 4.5V4a1 1 0 0 1 1-1z"/></svg></button>
       <button class="btn-icon" id="themeToggle" title="Theme (D)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
-      <button class="btn-icon reader-only" id="fullscreenBtn" title="Fullscreen (F)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+      <button class="btn-icon" id="fullscreenBtn" title="Fullscreen (F)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
       <button class="btn-icon reader-only settings-gear" id="settingsGear" title="Settings" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1.08 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.77 1.02 1.51 1.08H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/></svg></button>
       <button class="btn-icon reader-only" id="helpBtn" title="Shortcuts (?)" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
       <button class="btn reader-only" id="newTextBtn" style="display:none;" title="Load new text">+ New</button>
@@ -1684,7 +1884,7 @@ body::after {
       <span class="tray-label">Speed</span>
       <div class="speed-control">
         <button class="speed-stepper" id="speedDown" title="Slower">&#8722;</button>
-        <input type="range" id="speedSlider" min="1" max="100" value="50" title="Adjust speed">
+        <input type="range" id="speedSlider" min="1" max="100" value="56" title="Adjust speed">
         <button class="speed-stepper" id="speedUp" title="Faster">&#43;</button>
         <span class="speed-label" id="speedLabel"></span>
       </div>
@@ -1757,6 +1957,7 @@ body::after {
       <div class="act-row" id="actTrySample">
         <div class="act-ico subtle-bg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
         <div class="act-info"><div class="act-name">Try a sample</div><div class="act-desc">Experience focus reading instantly</div></div>
+        <div class="act-badge" style="background:rgba(76,175,80,0.12);color:#4caf50;">2 min</div>
         <div class="act-arrow">&#8250;</div>
       </div>
     </div>
@@ -1901,6 +2102,23 @@ body::after {
   </div>
 </div>
 
+<!-- Onboarding Tour -->
+<div class="tour-overlay" id="tourOverlay">
+  <div class="tour-backdrop" id="tourBackdrop"></div>
+  <div class="tour-gesture" id="tourGesture"></div>
+  <div class="tour-tooltip" id="tourTooltip">
+    <div class="tour-tip-title" id="tourTitle"></div>
+    <div class="tour-tip-text" id="tourText"></div>
+    <div class="tour-tip-footer">
+      <div class="tour-step-counter" id="tourStepCounter"></div>
+      <div class="tour-actions">
+        <div class="tour-skip" id="tourSkip">Skip tour</div>
+        <button class="tour-next" id="tourNext">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Help Overlay -->
 <div class="help-overlay" id="helpOverlay">
   <div class="help-card">
@@ -1945,8 +2163,8 @@ const state = {
   currentIndex: 0,
   units: [],
   paragraphs: [],
-  fontSize: 1.15,
-  speed: 50,
+  fontSize: 1,
+  speed: 56,
   timer: null,
   documentId: null,
   documentTitle: '',
@@ -2448,12 +2666,20 @@ function scrollToUnit(el) {
   const container = reader;
   const rect = el.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
-  // Account for settings sheet covering bottom of screen
-  let visibleHeight = containerRect.height;
-  if (mobileUI.isMobile() && mobileUI.state === 'settings') {
-    const sheet = $('#mobileSettingsPanel');
-    if (sheet) visibleHeight = Math.min(visibleHeight, window.innerHeight - sheet.getBoundingClientRect().height - 20);
+  let visibleBottom = containerRect.bottom;
+
+  // Account for anything covering the bottom: settings sheet, tour tooltip, pause sheet
+  if (mobileUI.isMobile()) {
+    const obstructions = ['#mobilePauseSheet', '#tourTooltip'].map(s => $(s)).filter(Boolean);
+    obstructions.forEach(obs => {
+      const r = obs.getBoundingClientRect();
+      if (r.top > 0 && r.top < visibleBottom && r.height > 20) {
+        visibleBottom = Math.min(visibleBottom, r.top);
+      }
+    });
   }
+
+  const visibleHeight = visibleBottom - containerRect.top;
   const centerY = containerRect.top + visibleHeight / 2;
   const elCenterY = rect.top + rect.height / 2;
   const diff = elCenterY - centerY;
@@ -2576,11 +2802,15 @@ function showReader() {
   $$('.reader-only').forEach(el => el.style.display = '');
   $('#sidebarTitle').textContent = state.documentTitle;
   detectChapters();
-  if (mobileUI.isMobile()) {
+  if (mobileUI.isMobile() && !state._skipMobileStateChange) {
     mobileUI.enter();
     $('#mobileDocTitle').textContent = state.documentTitle;
     // Delay to let units/chapters populate first
-    setTimeout(() => syncMobilePauseSheet(), 100);
+    setTimeout(() => {
+      syncMobilePauseSheet();
+      // Start onboarding tour for first-time users
+      if (tour.shouldShow()) setTimeout(() => tour.start(), 1500);
+    }, 100);
   } else {
     showBottomBar();
   }
@@ -2767,11 +2997,16 @@ function setMode(mode) {
   updateModeButtons();
   updateSpeedLabel();
 
+  // Block showReader from changing mobile state during mode switch
+  state._skipMobileStateChange = true;
+
   if (mode === 'line' || oldMode === 'line') {
     renderText();
   } else {
     collectUnits();
   }
+
+  state._skipMobileStateChange = false;
 
   if (state.units.length > 0) {
     let bestIdx = 0;
@@ -2790,7 +3025,7 @@ function setMode(mode) {
     advance();
   }
 
-  // Restore mobile state if it was preserved
+  // Restore mobile state
   if (preserveMobileState) mobileUI.setState(preserveMobileState);
 
   saveSettings();
@@ -3113,7 +3348,7 @@ function updateFontSizeDisplay() {
 
 $('#sidebarToggle').addEventListener('click', toggleSidebar);
 $('#themeToggle').addEventListener('click', toggleTheme);
-$('#fullscreenBtn').addEventListener('click', toggleFullscreen);
+$('#fullscreenBtn').addEventListener('click', () => { toggleFullscreen(); tour.onAction('fullscreen'); });
 $('#helpBtn').addEventListener('click', toggleHelp);
 $('#bookmarkBtn').addEventListener('click', toggleBookmarks);
 $('#addBookmarkBtn').addEventListener('click', () => { promptBookmarkName(); renderBookmarksList(); });
@@ -3342,6 +3577,7 @@ function syncMobilePauseSheet() {
 $('#mobilePlayBig').addEventListener('click', (e) => {
   e.stopPropagation();
   play();
+  tour.onAction('tap-to-play');
 });
 
 // Mobile: pull-up/down sheet drag interaction
@@ -3376,9 +3612,11 @@ $('#mobilePlayBig').addEventListener('click', (e) => {
       }
       mobileUI.setState('settings');
       syncMobileSettingsUI();
+      tour.onAction('swipe-up');
     } else if (diff < -30 && mobileUI.state === 'settings') {
       // Swiped down — collapse back to paused
       pause();
+      tour.onAction('swipe-down');
     }
   }, { passive: true });
 
@@ -3396,6 +3634,7 @@ $('#mobilePlayBig').addEventListener('click', (e) => {
       syncMobileSettingsUI();
     } else if (mobileUI.state === 'settings') {
       pause();
+      tour.onAction('swipe-down');
     }
   });
 })();
@@ -3404,8 +3643,8 @@ $('#mobilePlayBig').addEventListener('click', (e) => {
 reader.addEventListener('click', (e) => {
   if (!mobileUI.isMobile()) return;
   if (!$('.app-body').classList.contains('active')) return;
-  if (mobileUI.state === 'playing') { pause(); }
-  else if (mobileUI.state === 'paused') { play(); }
+  if (mobileUI.state === 'playing') { pause(); tour.onAction('tap-to-pause'); }
+  else if (mobileUI.state === 'paused') { play(); tour.onAction('tap-to-play'); }
 });
 
 // Mobile: backdrop tap
@@ -3454,87 +3693,87 @@ $('#actPasteText').addEventListener('click', () => {
 $('#actTrySample').addEventListener('click', () => {
   const sampleText = `CHAPTER 1: THE FORGOTTEN ART
 
-The most important thing in communication is hearing what isn't said. The art of reading subtleties, of understanding the weight behind silence, is what separates good listeners from great ones. And yet, somewhere along the way, we forgot how to truly read.
+We forgot how to read. Not the skill. The art. The art of reading subtleties, of understanding the weight behind silence, is what separates good listeners from great ones. And yet, somewhere along the way, we forgot how to truly read.
 
-Consider the last conversation you had that truly mattered. Not the pleasantries exchanged at the coffee shop, but the kind of conversation where something shifted — where understanding deepened, or a decision was made that would echo for years. In those moments, words are only part of the equation. The pauses between sentences carry meaning. The choice to look away or hold eye contact tells its own story.
+Consider the last book that moved you. Not the pleasantries exchanged at the coffee shop, but the kind of conversation where something shifted — where understanding deepened, or a decision was made that would echo for years. In those moments, words are only part of the equation. The pauses between sentences carry meaning. The choice to look away or hold eye contact tells its own story.
 
-Reading is the same. When we read with intention — one sentence at a time, giving each thought the space it deserves — we begin to hear what the author isn't saying. We catch the nuances, the deliberate word choices, the structure that reveals deeper meaning.
+Reading is the same. One sentence at a time. When we read with intention, giving each thought the space it deserves, we begin to hear what the author isn't saying. We catch the nuances, the deliberate word choices, the structure that reveals deeper meaning.
 
-Most of us have forgotten how to read this way. We scan. We skim. We consume content like fast food, rushing through paragraphs to get to the conclusion. But the richest ideas don't live in conclusions — they live in the journey between sentences.
+We scan. We skim. We rush. We consume content like fast food, rushing through paragraphs to get to the conclusion. But the richest ideas don't live in conclusions — they live in the journey between sentences.
 
 CHAPTER 2: THE SCIENCE OF ATTENTION
 
-Our brains were not designed for the world we live in. Every notification, every headline, every flashing pixel competes for the same limited resource: our attention. And attention, unlike time, cannot be saved or stored. It can only be spent.
+Your brain wasn't built for this world. Every notification, every headline, every flashing pixel competes for the same limited resource: our attention. And attention, unlike time, cannot be saved or stored. It can only be spent.
 
-Neuroscientists have discovered that deep reading activates entirely different neural pathways than skimming. When you read slowly and with focus, the brain engages regions associated with empathy, sensory processing, and long-term memory formation. You don't just understand the words — you feel them.
+Deep reading activates different brain pathways. When you read slowly and with focus, the brain engages regions associated with empathy, sensory processing, and long-term memory formation. You don't just understand the words — you feel them.
 
-In contrast, rapid scanning keeps the brain in a shallow processing mode. Information enters and exits without leaving a trace. This is why you can read an entire article and, moments later, struggle to recall a single detail. The words passed through you like water through a sieve.
+Skimming keeps the brain shallow. Information enters and exits without leaving a trace. This is why you can read an entire article and, moments later, struggle to recall a single detail. The words passed through you like water through a sieve.
 
-The solution isn't to read less. It's to read differently. To give your attention fully to one sentence before moving to the next. To treat each paragraph not as an obstacle between you and the conclusion, but as a destination in itself.
+The fix isn't reading less. It's reading differently. To give your attention fully to one sentence before moving to the next. To treat each paragraph not as an obstacle between you and the conclusion, but as a destination in itself.
 
 CHAPTER 3: THE RHYTHM OF WORDS
 
-Every great writer has a rhythm. Hemingway's sentences are short, sharp, percussive — like stones skipping across water. Virginia Woolf's prose flows and meanders, pulling you into an interior world that feels more real than the room you're sitting in. Dostoevsky builds tension through accumulation, stacking clause upon clause until the weight becomes almost unbearable.
+Great writers have rhythm. Hemingway's sentences are short, sharp, percussive — like stones skipping across water. Virginia Woolf's prose flows and meanders, pulling you into an interior world that feels more real than the room you're sitting in. Dostoevsky builds tension through accumulation, stacking clause upon clause until the weight becomes almost unbearable.
 
-When you read too quickly, you miss the rhythm entirely. It's like listening to music on fast-forward — you can identify the song, but you can't feel it. The melody disappears. The spaces between notes, which give music its emotional power, collapse into nothing.
+Read too fast and you miss it. It's like listening to music on fast-forward — you can identify the song, but you can't feel it. The melody disappears. The spaces between notes, which give music its emotional power, collapse into nothing.
 
-Focused reading restores the rhythm. It lets you feel the cadence of a well-crafted sentence, the deliberate pause of a period, the breathless rush of a long compound thought. You begin to hear the author's voice, not just their words.
+Focused reading restores this. It lets you feel the cadence of a well-crafted sentence, the deliberate pause of a period, the breathless rush of a long compound thought. You begin to hear the author's voice, not just their words.
 
-Try it now. Read the next sentence as slowly as you can, letting each word land before moving to the next. Notice how the meaning deepens when you give it time to unfold.
+Try it now. Read slowly. Let each word land before moving to the next. Notice how the meaning deepens when you give it time to unfold.
 
 CHAPTER 4: THE ARCHITECTURE OF UNDERSTANDING
 
-A book is not a sequence of sentences. It is an architecture — a carefully constructed building of ideas, where each paragraph supports the next, and the whole is greater than the sum of its parts.
+A book is not a list of sentences. It is an architecture — a carefully constructed building of ideas, where each paragraph supports the next, and the whole is greater than the sum of its parts.
 
 When you skim, you see the building from a distance. You can identify its shape, count its floors, note its color. But you never walk inside. You never discover the hidden room behind the staircase, the window that frames the garden just so, the way the light falls differently in each room throughout the day.
 
 Deep reading is walking through that building. It is opening every door, sitting in every chair, looking out of every window. It is discovering that what seemed like a simple structure from the outside contains infinities within.
 
-This is why some books reward multiple readings. Not because the words change, but because you do. Each time you enter the building, you notice something different. A doorway you missed before. A view you weren't ready to appreciate. A room that means something entirely new now that you've lived a little more.
+Some books reward re-reading. Not because the words change, but because you do. Each time you enter the building, you notice something different. A doorway you missed before. A view you weren't ready to appreciate. A room that means something entirely new now that you've lived a little more.
 
 CHAPTER 5: THE PRACTICE OF STILLNESS
 
-There is a kind of courage in stillness. In a world that rewards constant motion, choosing to sit with a single page, a single paragraph, a single sentence — this is an act of quiet rebellion.
+There is courage in stillness. In a world that rewards constant motion, choosing to sit with a single page, a single paragraph, a single sentence — this is an act of quiet rebellion.
 
-The Zen tradition speaks of "beginner's mind" — the practice of approaching each moment as if experiencing it for the first time. When we read with beginner's mind, even familiar words become fresh. A sentence we've read a hundred times suddenly reveals a meaning we never noticed.
+Zen calls it beginner's mind. The practice of approaching each moment as if experiencing it for the first time. When we read with beginner's mind, even familiar words become fresh. A sentence we've read a hundred times suddenly reveals a meaning we never noticed.
 
-This doesn't require effort so much as surrender. You don't force yourself to read slowly. You simply stop forcing yourself to read fast. You let go of the compulsion to finish, to get through it, to reach the end. You allow yourself to be exactly where you are in the text, without rushing toward where you think you should be.
+Don't force slowness. You simply stop forcing yourself to read fast. You let go of the compulsion to finish, to get through it, to reach the end. You allow yourself to be exactly where you are in the text, without rushing toward where you think you should be.
 
-In this stillness, something remarkable happens. The boundary between reader and text begins to dissolve. You stop reading about an experience and start having one. The words become transparent, and what shines through them is pure meaning.
+Something remarkable happens. The boundary between reader and text begins to dissolve. You stop reading about an experience and start having one. The words become transparent, and what shines through them is pure meaning.
 
 CHAPTER 6: READING AS EMPATHY
 
-When you read a novel deeply, you don't just follow a character's story — you inhabit their consciousness. You feel their fears, share their hopes, suffer their disappointments. For a few hours, you live inside another mind.
+Read a novel deeply. You don't just follow a character's story — you inhabit their consciousness. You feel their fears, share their hopes, suffer their disappointments. For a few hours, you live inside another mind.
 
-This is not metaphor. Brain imaging studies show that reading literary fiction activates the same neural networks involved in understanding other people's mental states. The more deeply you read, the more your brain practices empathy — building the same muscles you use to understand the people in your actual life.
+This isn't metaphor. Brain imaging studies show that reading literary fiction activates the same neural networks involved in understanding other people's mental states. The more deeply you read, the more your brain practices empathy.
 
-In an age of increasing polarization, this might be reading's most important gift. Every book is a bridge into a perspective you haven't lived. Every character is a person you haven't met. Every story is a world you haven't visited. But only if you read slowly enough to actually cross the bridge, meet the person, and visit the world.
+Every book is a bridge. Every character is a person you haven't met. Every story is a world you haven't visited. But only if you read slowly enough to actually cross the bridge, meet the person, and visit the world.
 
 CHAPTER 7: THE DIGITAL PARADOX
 
-We have more access to text than any generation in human history. Libraries that once took lifetimes to assemble now fit in our pockets. The complete works of Shakespeare, the entire corpus of ancient philosophy, the latest research from every field — all available in seconds.
+We have more text than ever. Libraries that once took lifetimes to assemble now fit in our pockets. The complete works of Shakespeare, the entire corpus of ancient philosophy, the latest research from every field — all available in seconds.
 
-And yet we read less deeply than ever before. The paradox of abundance is that it breeds superficiality. When everything is available, nothing feels essential. When you can read anything, you end up reading nothing — at least, nothing with the attention it deserves.
+Yet we read less deeply. The paradox of abundance is that it breeds superficiality. When everything is available, nothing feels essential. When you can read anything, you end up reading nothing — at least, nothing with the attention it deserves.
 
-The solution is not to read less, but to be more intentional about what you read and how you read it. Choose fewer things and read them more deeply. Treat a single essay with the same attention you'd give a conversation with someone you love.
+The answer isn't less reading. It's more intention. Choose fewer things and read them more deeply. Treat a single essay with the same attention you'd give a conversation with someone you love.
 
 CHAPTER 8: THE GIFT OF TIME
 
-Reading is one of the few activities that actually slows down the experience of time. When you're deep in a book, hours can pass that feel like minutes — but the memories formed in those hours are rich and detailed, making the time feel expanded in retrospect.
+Reading slows time. When you're deep in a book, hours can pass that feel like minutes — but the memories formed in those hours are rich and detailed, making the time feel expanded in retrospect.
 
-This is the gift of focused reading. It doesn't just help you understand ideas better. It gives you something increasingly rare: the experience of time that feels fully lived. Not time that slipped away while you scrolled, or evaporated while you multitasked, but time that you inhabited completely.
+This is the gift. It doesn't just help you understand ideas better. It gives you something increasingly rare: the experience of time that feels fully lived. Not time that slipped away while you scrolled, or evaporated while you multitasked, but time that you inhabited completely.
 
-Every sentence you read with full attention is a moment you were truly present. And a life made up of such moments — even if they're spent in a chair, with a book, in silence — is a life deeply lived.
+Every focused sentence is a present moment. And a life made up of such moments — even if they're spent in a chair, with a book, in silence — is a life deeply lived.
 
 CHAPTER 9: BEGINNING AGAIN
 
-The beautiful thing about focused reading is that you can start anytime. Right now. With the very next sentence you read.
+You can start now. Right now. With the very next sentence you read.
 
-You don't need special training or equipment. You don't need to meditate first or clear your schedule. You simply need to decide, for this one sentence, to be fully here. To let the words land. To notice not just what they say, but how they make you feel.
+No training needed. No equipment. You simply need to decide, for this one sentence, to be fully here. To let the words land. To notice not just what they say, but how they make you feel.
 
-And then you do it again with the next sentence. And the next.
+And then you do it again. And the next.
 
-This is the entire practice. There is nothing more to it. And there is nothing less.`;
+This is the entire practice. Nothing more. Nothing less.`;
   state.documentTitle = 'The Art of Focused Reading';
   state.isSample = true;
   processText(sampleText);
@@ -3593,6 +3832,311 @@ $('#mobileFontDown').addEventListener('click', () => {
 $('#mobileFontUp').addEventListener('click', () => {
   state.fontSize = Math.min(2.5, state.fontSize + 0.1);
   applyFontSize(); saveSettings(); syncMobileSettingsUI();
+});
+
+// ── Onboarding Tour ──
+const tour = {
+  active: false,
+  step: 0,
+  steps: [
+    {
+      title: 'Tap to play',
+      text: 'Tap the play button or anywhere on the screen to start reading.',
+      hint: 'Tap anywhere to play',
+      target: 'play-button',
+      interactive: 'tap-to-play',
+    },
+    {
+      title: 'Great! Now tap to pause',
+      text: 'Tap anywhere on the reading area to pause and see your progress.',
+      hint: 'Tap anywhere to pause',
+      target: 'reading-area',
+      interactive: 'tap-to-pause',
+    },
+    {
+      title: 'Your reading info',
+      text: 'See your chapter name, time remaining, and reading progress here.',
+      hint: 'Swipe up to continue',
+      target: 'bottom-sheet',
+      interactive: 'swipe-up',
+    },
+    {
+      title: 'Customize your experience',
+      text: 'Adjust reading speed to match your pace, change focus mode, theme, and font.',
+      hint: 'Swipe down when done',
+      target: 'settings-sheet',
+      interactive: 'swipe-down',
+    },
+    {
+      title: 'Go immersive',
+      text: 'Tap fullscreen for distraction-free reading experience. Tap X to exit the book.',
+      hint: 'Tap the fullscreen button',
+      target: 'header',
+      interactive: 'fullscreen',
+      lastStep: true,
+    },
+  ],
+
+  shouldShow() {
+    return !localStorage.getItem('thefocusreader_tour_done');
+  },
+
+  start() {
+    if (!this.shouldShow()) return;
+    this.active = true;
+    this.step = 0;
+    $('#tourOverlay').classList.add('active');
+    this.render();
+  },
+
+  next() {
+    this.step++;
+    if (this.step >= this.steps.length) {
+      this.finish();
+      return;
+    }
+    this.render();
+  },
+
+  finish() {
+    this.active = false;
+    $('#tourOverlay').classList.remove('active');
+    localStorage.setItem('thefocusreader_tour_done', '1');
+    const old = $('#tourOverlay').querySelector('.tour-spotlight, .tour-spotlight-rect');
+    if (old) old.remove();
+    const readerEl = document.querySelector('.reader');
+    if (readerEl) readerEl.style.paddingBottom = '';
+    ['#mobileCenterPlay', '#mobilePauseSheet', '#reader'].forEach(sel => {
+      const el = $(sel);
+      if (el) el.style.zIndex = '';
+    });
+  },
+
+  // Called externally when user completes an interactive action
+  onAction(action) {
+    if (!this.active && !this._pauseTimer) return;
+    // Handle early pause — user paused during the 7s reading window
+    if (action === 'tap-to-pause' && this._pauseTimer) {
+      action = 'early-pause';
+    }
+    const s = this.steps[this.step];
+    if (s.interactive === action || action === 'early-pause') {
+      if (action === 'tap-to-play') {
+        // Hide overlay, let user enjoy reading, then show "tap to pause"
+        $('#tourOverlay').classList.remove('active');
+        this._pauseTimer = setTimeout(() => {
+          this._pauseTimer = null;
+          this.step++;
+          $('#tourOverlay').classList.add('active');
+          this.render();
+        }, 7000);
+      } else if (action === 'tap-to-pause' || action === 'early-pause') {
+        // Cancel the pending timer if user paused early
+        if (this._pauseTimer) {
+          clearTimeout(this._pauseTimer);
+          this._pauseTimer = null;
+        }
+        // Go to reading info step (step index 2)
+        $('#tourOverlay').classList.remove('active');
+        setTimeout(() => {
+          this.step = 2; // "Your reading info" step
+          $('#tourOverlay').classList.add('active');
+          this.render();
+        }, 500);
+      } else if (action === 'swipe-up') {
+        // Settings opened — hide overlay instantly, show settings step after brief pause
+        $('#tourOverlay').classList.remove('active');
+        setTimeout(() => {
+          this.step++;
+          $('#tourOverlay').classList.add('active');
+          this.render();
+        }, 800);
+      } else if (action === 'swipe-down') {
+        // Settings closed — show header guide
+        $('#tourOverlay').classList.remove('active');
+        setTimeout(() => {
+          this.step++;
+          $('#tourOverlay').classList.add('active');
+          this.render();
+        }, 800);
+      } else if (action === 'fullscreen') {
+        // Fullscreen toggled — finish tour
+        setTimeout(() => this.finish(), 500);
+      }
+    }
+  },
+
+  render() {
+    const s = this.steps[this.step];
+    const overlay = $('#tourOverlay');
+    const tooltip = $('#tourTooltip');
+
+    $('#tourGesture').style.display = 'none';
+
+    // Re-trigger tooltip animation
+    tooltip.style.animation = 'none';
+    tooltip.offsetHeight; // force reflow
+    tooltip.style.animation = 'tourFadeIn 0.5s ease';
+
+    // Title, text, action hint
+    $('#tourTitle').textContent = s.title;
+    let textHtml = s.text;
+    if (s.hint) textHtml += '<div class="tour-action-hint">' + s.hint + '</div>';
+    $('#tourText').innerHTML = textHtml;
+
+    // Button — hide "Next" for interactive steps, show for non-interactive
+    if (s.interactive) {
+      $('#tourNext').style.display = 'none';
+    } else {
+      $('#tourNext').style.display = '';
+      $('#tourNext').textContent = s.lastStep ? 'Got it!' : 'Next';
+    }
+    $('#tourSkip').style.display = s.lastStep ? 'none' : '';
+
+    // Step counter
+    $('#tourStepCounter').textContent = s.lastStep ? '' : (this.step + 1) + ' / ' + this.steps.length;
+
+    // Remove old spotlight & arrows, reset z-index and overlay state
+    const oldSpot = overlay.querySelector('.tour-spotlight, .tour-spotlight-rect');
+    if (oldSpot) oldSpot.remove();
+    const oldArrows = tooltip.querySelectorAll('.tour-arrow-up, .tour-arrow-down');
+    oldArrows.forEach(a => a.remove());
+    overlay.style.pointerEvents = '';
+    delete overlay.dataset.tapAction;
+    $('#tourBackdrop').style.background = '';
+    const readerEl = document.querySelector('.reader');
+    if (readerEl) readerEl.style.paddingBottom = '';
+    ['#mobileCenterPlay', '#mobilePauseSheet', '#reader'].forEach(sel => {
+      const el = $(sel);
+      if (el) el.style.zIndex = '';
+    });
+
+    if (s.target === 'play-button') {
+      // Light backdrop — keep the paused UI visible
+      $('#tourBackdrop').style.background = 'rgba(0,0,0,0.15)';
+
+      const playBtn = $('#mobileCenterPlay');
+      if (playBtn) {
+        // Make play button and screen tappable through overlay
+        playBtn.style.zIndex = '102';
+        overlay.style.pointerEvents = 'auto';
+        overlay.dataset.tapAction = 'tap-to-play';
+      }
+
+      // Tooltip below center of screen (below play button area)
+      const cy = window.innerHeight * 0.55;
+      tooltip.style.cssText = `top:${cy}px;left:50%;transform:translateX(-50%);`;
+      const arrow = document.createElement('div');
+      arrow.className = 'tour-arrow-up';
+      tooltip.insertBefore(arrow, tooltip.firstChild);
+
+    } else if (s.target === 'reading-area') {
+      // Light backdrop so reading stays visible
+      $('#tourBackdrop').style.background = 'rgba(0,0,0,0.15)';
+      // Make the entire overlay tappable to trigger pause
+      overlay.style.pointerEvents = 'auto';
+      overlay.dataset.tapAction = 'tap-to-pause';
+
+      // Tooltip near bottom so reading area stays visible above
+      tooltip.style.cssText = `bottom:24px;left:50%;transform:translateX(-50%);`;
+
+      // Add padding so focused text stays above tooltip
+      setTimeout(() => {
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const blockedHeight = window.innerHeight - tooltipRect.top + 10;
+        document.querySelector('.reader').style.paddingBottom = blockedHeight + 'px';
+      }, 100);
+
+    } else if (s.target === 'bottom-sheet') {
+      // Light backdrop — same as step 1
+      $('#tourBackdrop').style.background = 'rgba(0,0,0,0.15)';
+
+      const sheet = $('#mobilePauseSheet');
+      if (sheet) {
+        // Make sheet interactive through overlay
+        sheet.style.zIndex = '102';
+
+        // Tooltip above sheet
+        const rect = sheet.getBoundingClientRect();
+        tooltip.style.cssText = `bottom:${window.innerHeight - rect.top + 18}px;left:50%;transform:translateX(-50%);`;
+        const arrow = document.createElement('div');
+        arrow.className = 'tour-arrow-down';
+        tooltip.appendChild(arrow);
+      }
+
+    } else if (s.target === 'settings-sheet') {
+      // No spotlight — keep reading area visible for live preview
+      $('#tourBackdrop').style.background = 'rgba(0,0,0,0.1)';
+
+      const sheet = $('#mobilePauseSheet');
+      if (sheet) {
+        sheet.style.zIndex = '102';
+
+        const rect = sheet.getBoundingClientRect();
+        // Tooltip just above settings sheet
+        tooltip.style.cssText = `bottom:${window.innerHeight - rect.top + 14}px;left:50%;transform:translateX(-50%);`;
+        const arrow = document.createElement('div');
+        arrow.className = 'tour-arrow-down';
+        tooltip.appendChild(arrow);
+
+        // Ensure reading is playing for live preview
+        if (!state.playing && state.units.length > 0) {
+          state.playing = true;
+          playPauseBtn.innerHTML = '&#9646;&#9646;';
+          advance();
+        }
+
+        // Add extra padding after tooltip renders so scrollToUnit keeps text visible
+        setTimeout(() => {
+          const tooltipRect = tooltip.getBoundingClientRect();
+          const blockedHeight = window.innerHeight - tooltipRect.top + 10;
+          document.querySelector('.reader').style.paddingBottom = blockedHeight + 'px';
+        }, 100);
+      }
+
+    } else if (s.target === 'header') {
+      // Light backdrop
+      $('#tourBackdrop').style.background = 'rgba(0,0,0,0.15)';
+
+      const header = $('.header');
+      const fsBtn = $('#fullscreenBtn');
+      if (header) {
+        // Make header interactive
+        header.style.zIndex = '102';
+
+        const rect = header.getBoundingClientRect();
+        // Tooltip below header
+        tooltip.style.cssText = `top:${rect.bottom + 14}px;left:50%;transform:translateX(-50%);`;
+        const arrow = document.createElement('div');
+        arrow.className = 'tour-arrow-up';
+        // Point arrow at fullscreen button
+        if (fsBtn) {
+          const fsRect = fsBtn.getBoundingClientRect();
+          const tooltipLeft = (window.innerWidth - tooltip.offsetWidth) / 2;
+          const arrowLeft = fsRect.left + fsRect.width / 2 - tooltipLeft - 8;
+          arrow.style.left = arrowLeft + 'px';
+          arrow.style.transform = 'none';
+        }
+        tooltip.insertBefore(arrow, tooltip.firstChild);
+      }
+    }
+  }
+};
+
+$('#tourNext').addEventListener('click', (e) => { e.stopPropagation(); tour.next(); });
+$('#tourSkip').addEventListener('click', (e) => { e.stopPropagation(); tour.finish(); });
+$('#tourTooltip').addEventListener('click', (e) => { e.stopPropagation(); });
+$('#tourOverlay').addEventListener('click', () => {
+  const action = $('#tourOverlay').dataset.tapAction;
+  if (action === 'tap-to-pause') {
+    delete $('#tourOverlay').dataset.tapAction;
+    pause();
+    tour.onAction('tap-to-pause');
+  } else if (action === 'tap-to-play') {
+    delete $('#tourOverlay').dataset.tapAction;
+    play();
+    tour.onAction('tap-to-play');
+  }
 });
 
 // ── Init ──
