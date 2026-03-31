@@ -3997,8 +3997,9 @@ const tour = {
     }
     $('#tourSkip').style.display = s.lastStep ? 'none' : '';
 
-    // Step counter
+    // Step counter + footer visibility
     $('#tourStepCounter').textContent = s.lastStep ? '' : (this.step + 1) + ' / ' + this.steps.length;
+    $('.tour-tip-footer').style.display = (s.interactive && s.lastStep) ? 'none' : '';
 
     // Remove old spotlight & arrows, reset z-index and overlay state
     const oldSpot = overlay.querySelector('.tour-spotlight, .tour-spotlight-rect');
