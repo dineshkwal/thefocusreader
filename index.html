@@ -778,6 +778,7 @@ body::after {
   overflow-x: hidden;
   padding: 56px 32px 80px;
   scroll-behavior: smooth;
+  position: relative;
 }
 .reader::-webkit-scrollbar { width: 5px; }
 .reader::-webkit-scrollbar-track { background: transparent; }
@@ -794,6 +795,9 @@ body::after {
   letter-spacing: 0.005em;
   cursor: default;
   caret-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .reader-content .para {
@@ -1155,6 +1159,73 @@ body::after {
   height: 24px;
   z-index: 25;
   display: none;
+}
+
+/* ═══════════════════════════════════════
+   DICTIONARY CARD
+   ═══════════════════════════════════════ */
+.dict-card {
+  position: absolute;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  width: calc(100% - 40px);
+  max-width: 300px;
+  box-shadow: var(--shadow);
+  z-index: 30;
+  animation: dictFadeIn 0.25s ease;
+}
+@keyframes dictFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dict-card .dict-arrow {
+  position: absolute;
+  width: 16px; height: 8px;
+  overflow: hidden;
+  left: var(--arrow-x, 30px);
+}
+.dict-card .dict-arrow.up { top: -8px; }
+.dict-card .dict-arrow.up::after {
+  content: ''; position: absolute; top: 4px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px; height: 12px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+}
+.dict-card .dict-arrow.down { bottom: -8px; }
+.dict-card .dict-arrow.down::after {
+  content: ''; position: absolute; bottom: 4px; left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px; height: 12px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+}
+
+.dict-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.dict-word { font-size: 1rem; font-weight: 600; font-family: var(--font-reading); }
+.dict-phonetic { font-size: 0.62rem; color: var(--text-muted); }
+.dict-pos {
+  font-size: 0.55rem; color: var(--accent); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px;
+}
+.dict-def { font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+.dict-example {
+  font-size: 0.62rem; color: var(--text-faded);
+  font-style: italic; margin-top: 3px; line-height: 1.4;
+}
+.dict-loading {
+  font-size: 0.72rem; color: var(--text-muted); text-align: center; padding: 8px 0;
+}
+.dict-error {
+  font-size: 0.72rem; color: var(--text-muted); text-align: center; padding: 4px 0;
+}
+
+.word-lookup {
+  background: rgba(212,165,116,0.2);
+  border-bottom: 2px solid var(--accent);
+  padding: 1px 2px;
+  border-radius: 3px;
 }
 
 /* ═══════════════════════════════════════
@@ -2516,6 +2587,9 @@ function processText(rawText) {
 // ── Rendering ──
 function renderText() {
   readerContent.innerHTML = '';
+  // Dismiss any open dictionary card
+  const existingDict = reader.querySelector('.dict-card');
+  if (existingDict) existingDict.remove();
   let lastPage = 0;
 
   state.paragraphs.forEach((para, pi) => {
@@ -4143,6 +4217,151 @@ $('#tourOverlay').addEventListener('click', () => {
     tour.onAction('tap-to-play');
   }
 });
+
+// ── Dictionary Lookup ──
+(function() {
+  let longPressTimer = null;
+  let longPressTriggered = false;
+  let activeCard = null;
+  let activeWord = null;
+
+  function getWordAtTouch(e) {
+    const touch = e.touches ? e.touches[0] : e;
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && el.classList.contains('word')) return el;
+    return null;
+  }
+
+  function cleanWord(text) {
+    return text.replace(/[^a-zA-Z'-]/g, '').toLowerCase();
+  }
+
+  function dismissCard() {
+    if (activeCard) { activeCard.remove(); activeCard = null; }
+    if (activeWord) { activeWord.classList.remove('word-lookup'); activeWord = null; }
+  }
+
+  async function lookupWord(wordEl) {
+    const raw = cleanWord(wordEl.textContent);
+    if (!raw || raw.length < 2) return;
+
+    // Pause reading if playing
+    if (state.playing) pause();
+
+    dismissCard();
+    activeWord = wordEl;
+    wordEl.classList.add('word-lookup');
+
+    // Create card with loading state
+    const card = document.createElement('div');
+    card.className = 'dict-card';
+    card.innerHTML = '<div class="dict-loading">Looking up...</div>';
+    reader.appendChild(card);
+    activeCard = card;
+
+    // Position card near the word
+    positionCard(card, wordEl);
+
+    // Fetch definition
+    try {
+      const resp = await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(raw));
+      if (!resp.ok) throw new Error('not found');
+      const data = await resp.json();
+      const entry = data[0];
+      const meaning = entry.meanings[0];
+      const def = meaning.definitions[0];
+
+      let html = '<div class="dict-arrow up"></div>';
+      html += '<div class="dict-header">';
+      html += '<div class="dict-word">' + escHtml(entry.word) + '</div>';
+      if (entry.phonetic) html += '<div class="dict-phonetic">' + escHtml(entry.phonetic) + '</div>';
+      html += '</div>';
+      html += '<div class="dict-pos">' + escHtml(meaning.partOfSpeech) + '</div>';
+      html += '<div class="dict-def">' + escHtml(def.definition) + '</div>';
+      if (def.example) html += '<div class="dict-example">"' + escHtml(def.example) + '"</div>';
+
+      card.innerHTML = html;
+      positionCard(card, wordEl);
+    } catch(e) {
+      card.innerHTML = '<div class="dict-arrow up"></div><div class="dict-error">No definition found for "' + escHtml(raw) + '"</div>';
+      positionCard(card, wordEl);
+    }
+  }
+
+  function positionCard(card, wordEl) {
+    const readerRect = reader.getBoundingClientRect();
+    const wordRect = wordEl.getBoundingClientRect();
+    const wordTop = wordRect.top - readerRect.top + reader.scrollTop;
+    const wordLeft = wordRect.left - readerRect.left;
+    const wordCenterX = wordLeft + wordRect.width / 2;
+
+    // Position below word by default
+    card.style.top = (wordTop + wordRect.height + 10) + 'px';
+
+    // Horizontal: center on word, clamp to reader bounds
+    const cardWidth = card.offsetWidth || 280;
+    let left = wordCenterX - cardWidth / 2;
+    left = Math.max(4, Math.min(left, readerRect.width - cardWidth - 4));
+    card.style.left = left + 'px';
+
+    // Arrow position
+    const arrowX = wordCenterX - left;
+    card.style.setProperty('--arrow-x', Math.max(16, Math.min(arrowX, cardWidth - 16)) + 'px');
+
+    // If card goes below viewport, show above word instead
+    const cardBottom = wordRect.bottom + 10 + (card.offsetHeight || 100);
+    if (cardBottom > window.innerHeight - 20) {
+      card.style.top = (wordTop - (card.offsetHeight || 100) - 10) + 'px';
+      // Switch arrow to down
+      const arrow = card.querySelector('.dict-arrow');
+      if (arrow) { arrow.classList.remove('up'); arrow.classList.add('down'); }
+    }
+  }
+
+  // Mobile: long-press detection
+  readerContent.addEventListener('touchstart', (e) => {
+    longPressTriggered = false;
+    const wordEl = getWordAtTouch(e);
+    if (!wordEl) return;
+    longPressTimer = setTimeout(() => {
+      longPressTriggered = true;
+      lookupWord(wordEl);
+    }, 500);
+  }, { passive: true });
+
+  readerContent.addEventListener('touchmove', () => {
+    clearTimeout(longPressTimer);
+  }, { passive: true });
+
+  readerContent.addEventListener('touchend', (e) => {
+    clearTimeout(longPressTimer);
+    if (longPressTriggered) {
+      e.preventDefault();
+      longPressTriggered = false;
+    }
+  });
+
+  // Desktop: double-click detection
+  readerContent.addEventListener('dblclick', (e) => {
+    const wordEl = e.target.closest('.word');
+    if (wordEl) lookupWord(wordEl);
+  });
+
+  // Dismiss on outside tap/click
+  document.addEventListener('click', (e) => {
+    if (!activeCard) return;
+    if (activeCard.contains(e.target)) return;
+    if (activeWord && activeWord.contains(e.target)) return;
+    dismissCard();
+  });
+
+  document.addEventListener('touchstart', (e) => {
+    if (!activeCard) return;
+    if (activeCard.contains(e.target)) return;
+    if (activeWord && activeWord.contains(e.target)) return;
+    dismissCard();
+  }, { passive: true });
+})();
 
 // ── Init ──
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
