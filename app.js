@@ -1192,6 +1192,12 @@ function updateFontSizeDisplay() {
 }
 
 $('#sidebarToggle').addEventListener('click', toggleSidebar);
+$('#logoHome').addEventListener('click', () => {
+  if ($('.app-body') && $('.app-body').classList.contains('active')) {
+    if (mobileUI.isMobile()) mobileUI.exit();
+    showWelcome();
+  }
+});
 $('#themeToggle').addEventListener('click', toggleTheme);
 $('#fullscreenBtn').addEventListener('click', () => { toggleFullscreen(); tour.onAction('fullscreen'); });
 $('#helpBtn').addEventListener('click', toggleHelp);
